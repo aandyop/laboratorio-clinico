@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Pacientes - Laboratorio</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+    <nav>
+        <a href="/pacientes.html">Pacientes</a> | 
+        <a href="/examenes.html">Exámenes</a>
+    </nav>
+
+    <h1>Registro de Pacientes</h1>
+    
+    <section>
+        <h2 id="form-title">Nuevo Paciente</h2>
+        <form id="paciente-form">
+            <input type="hidden" id="paciente-id">
+            <input type="text" id="nombre" placeholder="Nombre completo" required>
+            <input type="text" id="cedula" placeholder="Cédula" required>
+            <input type="text" id="telefono" placeholder="Teléfono">
+            <button type="submit" id="btn-save">Guardar</button>
+            <button type="button" id="btn-cancel" style="display:none;">Cancelar</button>
+        </form>
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>Listado</h2>
+        <table border="1" id="pacientes-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cédula</th>
+                    <th>Teléfono</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </section>
+
+    <script src="/js/pacientes-client.js"></script>
+</body>
+</html>
