@@ -18,6 +18,15 @@ class ExamenController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    static async listarTodos(req, res) {
+        try {
+            const resultados = await Examen.obtenerTodosConPaciente();
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
 module.exports = ExamenController;

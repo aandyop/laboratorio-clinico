@@ -1,7 +1,6 @@
 const form = document.getElementById('paciente-form');
 const tableBody = document.querySelector('#pacientes-table tbody');
 
-// 1. Cargar pacientes al abrir la página (GET)
 async function cargarPacientes() {
     const response = await fetch('/api/pacientes');
     const pacientes = await response.json();
@@ -21,7 +20,6 @@ async function cargarPacientes() {
     });
 }
 
-// 2. Guardar paciente (POST)
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const datos = {
@@ -40,11 +38,23 @@ form.addEventListener('submit', async (e) => {
     cargarPacientes();
 });
 
-// 3. Eliminar paciente (DELETE) - *Debes agregar la ruta DELETE en tu backend para que esto funcione
 async function eliminarPaciente(id) {
-    if(confirm('¿Seguro que deseas eliminarlo?')) {
-        // Aquí llamarías a tu endpoint DELETE
-        alert('Botón configurado para el ID: ' + id);
+    if (confirm('¿Estás seguro de eliminar este paciente? Se borrarán todos sus exámenes asociados automáticamente.')) {
+        try {
+            const response = await fetch(`/api/pacientes/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('Paciente y sus exámenes eliminados con éxito');
+                cargarPacientes();
+            } else {
+                alert('Error al eliminar el paciente');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión al servidor');
+        }
     }
 }
 

@@ -32,8 +32,9 @@ class PacienteController {
     // Método para borrar
     static async borrar(req, res) {
         try {
-            await Paciente.eliminar(req.params.id);
-            res.json({ mensaje: "Paciente eliminado" });
+            const id = req.params.id;
+            await Paciente.eliminar(id);
+            res.json({ mensaje: "Eliminado" });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

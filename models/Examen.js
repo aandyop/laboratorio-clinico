@@ -8,7 +8,6 @@ class Examen {
         this.fecha = fecha;
     }
 
-    // Uso de Promesas para obtener exámenes por paciente
     static async obtenerPorPaciente(pacienteId) {
         const [rows] = await db.query('SELECT * FROM examenes WHERE paciente_id = ?', [pacienteId]);
         return rows;
@@ -21,6 +20,17 @@ class Examen {
             [paciente_id, tipo_examen, resultado, fecha]
         );
         return result.insertId;
+    }
+
+    static async obtenerTodosConPaciente() {
+        const query = `
+            SELECT e.id, e.tipo_examen, e.resultado, e.fecha, p.nombre AS paciente_nombre 
+            FROM examenes e
+            INNER JOIN pacientes p ON e.paciente_id = p.id
+            ORDER BY e.fecha DESC
+        `;
+        const [rows] = await db.query(query);
+        return rows;
     }
 }
 
