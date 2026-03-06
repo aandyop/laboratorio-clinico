@@ -27,6 +27,7 @@ app.use('/users', usersRouter);
 app.use('/api/pacientes', pacientesRouter);
 app.use('/api/examenes', examenesRouter);
 app.use('/api/medicos', medicosRouter);
+app.use('/api/facturas', require('./routes/facturas'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

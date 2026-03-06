@@ -8,22 +8,21 @@
 <body>
     <nav>
         <a href="/pacientes.html">Pacientes</a> | 
-        <a href="/examenes.html">Exámenes</a>
+        <a href="/examenes.html"><strong>Exámenes</strong></a> |
+        <a href="/facturas.html">Facturación</a> |
+        <a href="/medicos.html">Médicos</a>
     </nav>
 
-    <h1>Registro de Exámenes Clínicos</h1>
-    
+    <h1>Control de Exámenes</h1>
+
     <section>
-        <h2>Nuevo Examen</h2>
         <form id="examen-form">
             <select id="paciente_id" required>
-                <option value="">Seleccione un paciente...</option>
+                <option value="">Cargando pacientes...</option>
             </select>
-            
-            <input type="text" id="tipo_examen" placeholder="Ej: Hematología, Glucosa" required>
-            <textarea id="resultado" placeholder="Resultado del examen"></textarea>
+            <input type="text" id="tipo_examen" placeholder="Tipo de Examen" required>
+            <input type="text" id="resultado" placeholder="Resultado" required>
             <input type="date" id="fecha" required>
-            
             <button type="submit">Registrar Examen</button>
         </form>
     </section>
@@ -36,7 +35,7 @@
             <thead>
                 <tr>
                     <th>Paciente</th>
-                    <th>Tipo</th>
+                    <th>Examen</th>
                     <th>Resultado</th>
                     <th>Fecha</th>
                 </tr>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Médicos - Laboratorio</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+    <nav>
+        <a href="/pacientes.html">Pacientes</a> | 
+        <a href="/examenes.html">Exámenes</a> |
+        <a href="/facturas.html">Facturación</a> |
+        <a href="/medicos.html">Médicos</a>
+    </nav>
+
+    <h1>Gestión de Médicos Referentes</h1>
+
+    <section>
+        <form id="medico-form">
+            <input type="text" id="nombre" placeholder="Nombre del Médico" required>
+            <input type="text" id="especialidad" placeholder="Especialidad" required>
+            <input type="text" id="codigo_colegiado" placeholder="Código de Colegiado" required>
+            <button type="submit">Registrar Médico</button>
+        </form>
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>Directorio de Médicos</h2>
+        <table id="medicos-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Especialidad</th>
+                    <th>Código</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <script src="/js/medicos-client.js"></script>
+</body>
+</html>

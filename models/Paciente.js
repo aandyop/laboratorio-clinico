@@ -8,15 +8,20 @@ class Paciente {
     }
 
     static async obtenerTodos() {
-        const [rows] = await db.query('SELECT * FROM pacientes');
+        const query = `
+            SELECT p.*, m.nombre AS medico_nombre 
+            FROM pacientes p 
+            LEFT JOIN medicos m ON p.medico_id = m.id
+        `;
+        const [rows] = await db.query(query);
         return rows;
     }
 
     static async crear(datos) {
-        const { nombre, cedula, telefono } = datos;
+        const { nombre, cedula, telefono, medico_id } = datos;
         const [result] = await db.query(
-            'INSERT INTO pacientes (nombre, cedula, telefono) VALUES (?, ?, ?)',
-            [nombre, cedula, telefono]
+            'INSERT INTO pacientes (nombre, cedula, telefono, medico_id) VALUES (?, ?, ?, ?)',
+            [nombre, cedula, telefono, medico_id || null]
         );
         return result.insertId;
     }

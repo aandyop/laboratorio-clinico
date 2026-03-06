@@ -2,44 +2,65 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestión de Pacientes - Laboratorio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pacientes - Laboratorio Clínico</title>
     <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
     <nav>
-        <a href="/pacientes.html">Pacientes</a> | 
-        <a href="/examenes.html">Exámenes</a>
+        <a href="/pacientes.html"><strong>Pacientes</strong></a> | 
+        <a href="/examenes.html">Exámenes</a> |
+        <a href="/facturas.html">Facturación</a> |
+        <a href="/medicos.html">Médicos</a>
     </nav>
 
-    <h1>Registro de Pacientes</h1>
-    
-    <section>
-        <h2 id="form-title">Nuevo Paciente</h2>
+    <h1>Gestión de Pacientes</h1>
+
+    <section id="registro-paciente">
+        <h2>Registrar Nuevo Paciente</h2>
         <form id="paciente-form">
-            <input type="hidden" id="paciente-id">
-            <input type="text" id="nombre" placeholder="Nombre completo" required>
-            <input type="text" id="cedula" placeholder="Cédula" required>
-            <input type="text" id="telefono" placeholder="Teléfono">
-            <button type="submit" id="btn-save">Guardar</button>
-            <button type="button" id="btn-cancel" style="display:none;">Cancelar</button>
+            <div class="form-group">
+                <input type="text" id="nombre" placeholder="Nombre completo" required>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="cedula" placeholder="Cédula de Identidad" required>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="telefono" placeholder="Teléfono" required>
+            </div>
+
+            <div class="form-group">
+                <label for="medico_id">Médico Referente:</label>
+                <select id="medico_id">
+                    <option value="">-- Seleccione Médico (Opcional) --</option>
+                </select>
+            </div>
+
+            <button type="submit" id="btn-guardar">Guardar Paciente</button>
         </form>
     </section>
 
     <hr>
 
-    <section>
-        <h2>Listado</h2>
-        <table border="1" id="pacientes-table">
+    <section id="lista-pacientes">
+        <h2>Listado de Pacientes Registrados</h2>
+        <table id="pacientes-table" border="1">
             <thead>
                 <tr>
                     <th>Nombre</th>
                     <th>Cédula</th>
                     <th>Teléfono</th>
+                    <th>Médico Referente</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                </tbody>
+                <tr>
+                    <td colspan="5">Cargando datos...</td>
+                </tr>
+            </tbody>
         </table>
     </section>
 
