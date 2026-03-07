@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Valores Ref. - Laboratorio</title>
+    <title>Inventario - Laboratorio</title>
     <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
@@ -11,23 +11,53 @@
         <a href="/examenes.html">Exámenes</a> |
         <a href="/facturas.html">Facturación</a> |
         <a href="/medicos.html">Médicos</a> |
-        <a href="/inventario.html">Inventario</a> |
-        <a href="/valores.html"><strong>Valores Ref.</strong></a>
+        <a href="/inventario.html"><strong>Inventario</strong></a> |
+        <a href="/valores.html">Valores Ref.</a>
     </nav>
 
-    <h1>Valores de Referencia</h1>
-    <form id="valores-form">
-        <input type="text" id="nombre_examen" placeholder="Examen" required>
-        <input type="number" id="valor_minimo" step="0.01" placeholder="Min" required>
-        <input type="number" id="valor_maximo" step="0.01" placeholder="Max" required>
-        <input type="text" id="unidad" placeholder="Unidad" required>
-        <button type="submit">Guardar</button>
-    </form>
+    <h1>Inventario de Reactivos e Insumos</h1>
+
+    <section class="container">
+        <div class="card">
+            <form id="inventario-form">
+                <input type="text" id="nombre_insumo" placeholder="Nombre del Insumo (ej: Tubos de ensayo)" required>
+                <input type="number" id="cantidad_stock" placeholder="Cantidad / Stock Inicial" required>
+                
+                <select id="unidad_medida" required>
+                    <option value="">Seleccione Unidad...</option>
+                    <option value="Unidades">Unidades</option>
+                    <option value="ML">Mililitros (ML)</option>
+                    <option value="Cajas">Cajas</option>
+                    <option value="Frascos">Frascos</option>
+                </select>
+
+                <label for="fecha_vencimiento">Fecha de Vencimiento:</label>
+                <input type="date" id="fecha_vencimiento" required>
+
+                <button type="submit" class="btn-guardar">Agregar al Stock</button>
+            </form>
+        </div>
+    </section>
+
     <hr>
-    <table id="valores-table" border="1">
-        <thead><tr><th>Examen</th><th>Rango</th><th>Unidad</th></tr></thead>
-        <tbody></tbody>
-    </table>
-    <script src="/js/valores-client.js"></script>
+
+    <section>
+        <h2>Stock Actual en Bodega</h2>
+        <table id="inventario-table" border="1">
+            <thead>
+                <tr>
+                    <th>Insumo</th>
+                    <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </section>
+
+    <script src="/js/inventario-client.js"></script>
 </body>
 </html>
