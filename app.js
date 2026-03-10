@@ -3,6 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+require('dotenv').config();
+
+var app = express(); 
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -24,6 +30,22 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// --- RUTAS DE VISTAS (FRONTEND) ---
+
+// Público: Directorio de Médicos y Valores de Referencia
+app.get('/medicos', (req, res) => res.render('medicos'));
+app.get('/valores', (req, res) => res.render('valores'));
+
+// La página de Login (Pública)
+app.get('/login', (req, res) => res.render('login'));
+app.get('/', (req, res) => res.redirect('/login')); // Redirige el inicio al login
+
+// Privadas: Pacientes, Exámenes, etc.
+app.get('/pacientes', (req, res) => res.render('pacientes'));
+app.get('/examenes', (req, res) => res.render('examenes'));
+app.get('/inventario', (req, res) => res.render('inventario'));
+app.get('/facturas', (req, res) => res.render('facturas'));
 
 app.use('/api/auth', authRouter);
 app.use('/api/pacientes', pacientesRouter);

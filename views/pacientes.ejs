@@ -38,4 +38,21 @@
     </table>
     <script src="/js/pacientes-client.js"></script>
 </body>
+
+<script>
+    const token = localStorage.getItem('token');
+    const rol = localStorage.getItem('rol');
+
+    if (!token) {
+        alert("Acceso denegado. Por favor inicie sesión.");
+        window.location.href = '/login';
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('rol');
+        window.location.href = '/login';
+    }
+</script>
+<button onclick="logout()" style="float: right; background: red; color: white;">Cerrar Sesión</button>
 </html>
