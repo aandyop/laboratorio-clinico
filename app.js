@@ -11,6 +11,7 @@ var examenesRouter = require('./routes/examenes');
 const medicosRouter = require('./routes/medicos');
 const inventarioRouter = require('./routes/inventario');
 const valoresRouter = require('./routes/valoresReferencia');
+const authRouter = require('./routes/auth');
 
 var app = express();
 
@@ -24,6 +25,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/api/auth', authRouter);
+app.use('/api/pacientes', pacientesRouter);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/pacientes', pacientesRouter);
