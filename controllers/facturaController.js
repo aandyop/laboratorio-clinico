@@ -6,6 +6,7 @@ class FacturaController {
             const facturas = await Factura.obtenerTodas();
             res.json(facturas);
         } catch (error) {
+            console.error("Error al obtener facturas:", error);
             res.status(500).json({ error: "Error al recuperar el historial de facturación." });
         }
     }
@@ -15,16 +16,16 @@ class FacturaController {
             const { paciente_id, monto_total, metodo_pago } = req.body;
             
             if (!paciente_id) {
-                return res.status(400).json({ error: "Debe seleccionar un paciente para generar la factura." });
+                return res.status(400).json({ error: "Debe seleccionar un paciente." });
             }
 
             const montoNum = parseFloat(monto_total);
             if (isNaN(montoNum) || montoNum <= 0) {
-                return res.status(400).json({ error: "El monto total debe ser un número válido mayor a 0." });
+                return res.status(400).json({ error: "El monto debe ser un número válido mayor a 0." });
             }
 
             if (!metodo_pago || metodo_pago.trim() === "") {
-                return res.status(400).json({ error: "El método de pago es obligatorio (Efectivo, Transferencia, etc.)." });
+                return res.status(400).json({ error: "El método de pago es obligatorio." });
             }
 
             const id = await Factura.crear({

@@ -6,7 +6,7 @@ class Factura {
             SELECT f.*, p.nombre AS paciente_nombre 
             FROM facturas f
             JOIN pacientes p ON f.paciente_id = p.id
-            ORDER BY f.fecha DESC
+            ORDER BY f.fecha_emision DESC
         `;
         const [rows] = await db.query(query);
         return rows;

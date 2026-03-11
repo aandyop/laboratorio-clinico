@@ -22,7 +22,7 @@
         <div class="card">
             <form id="inventario-form">
                 <input type="text" id="nombre_insumo" placeholder="Nombre del Insumo" required>
-                <input type="number" id="cantidad_stock" placeholder="Cantidad Inicial" required>
+                <input type="number" id="cantidad_stock" placeholder="Cantidad Inicial" required min="0">
                 <select id="unidad_medida" required>
                     <option value="">Seleccione Unidad...</option>
                     <option value="Unidades">Unidades</option>
@@ -69,6 +69,7 @@
                 const items = await response.json();
                 const tbody = document.querySelector('#inventario-table tbody');
                 tbody.innerHTML = '';
+                
                 items.forEach(item => {
                     tbody.innerHTML += `
                         <tr>
@@ -77,11 +78,35 @@
                             <td>${item.unidad_medida}</td>
                             <td>${item.fecha_vencimiento ? new Date(item.fecha_vencimiento).toLocaleDateString() : 'N/A'}</td>
                             <td>
-                                <button onclick="eliminarInsumo(${item.id})">Eliminar</button>
+                                <button onclick="eliminarInsumo(${item.id})" style="background:#ff4d4d; color:white; border:none; padding:3px 8px; cursor:pointer;">Eliminar</button>
                             </td>
                         </tr>`;
                 });
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("Error al cargar inventario:", err); 
+            }
+        }
+
+        async function eliminarInsumo(id) {
+            if (!confirm("¿Seguro que deseas eliminar este insumo del inventario?")) return;
+
+            try {
+                const response = await fetch(`/api/inventario/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    alert("Insumo eliminado con éxito");
+                    cargarInventario();
+                } else {
+                    const errorData = await response.json();
+                    alert("Error: " + (errorData.error || "No se pudo eliminar"));
+                }
+            } catch (err) {
+                console.error("Error en la petición DELETE:", err);
+                alert("Error de conexión");
+            }
         }
 
         document.getElementById('inventario-form').addEventListener('submit', async (e) => {
@@ -95,12 +120,20 @@
 
             const response = await fetch('/api/inventario', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                headers: { 
+                    'Authorization': `Bearer ${token}`, 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify(datos)
             });
 
-            if (response.ok) location.reload();
-            else alert("Error al guardar en inventario");
+            if (response.ok) {
+                document.getElementById('inventario-form').reset();
+                cargarInventario();
+            } else {
+                const error = await response.json();
+                alert(error.error || "Error al guardar en inventario");
+            }
         });
 
         cargarInventario();

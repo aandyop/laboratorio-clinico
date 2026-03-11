@@ -18,24 +18,32 @@
 
     <h1>Configuración de Valores de Referencia</h1>
 
-    <section>
-        <form id="valores-form">
-            <input type="text" id="nombre_examen" placeholder="Nombre del Examen" required>
-            <input type="number" id="valor_minimo" step="0.01" placeholder="Valor Mínimo" required>
-            <input type="number" id="valor_maximo" step="0.01" placeholder="Valor Máximo" required>
-            <input type="text" id="unidad" placeholder="Unidad (ej: mg/dL)" required>
-            <button type="submit">Guardar Rango</button>
-        </form>
+    <section class="container">
+        <div class="card">
+            <form id="valores-form">
+                <input type="text" id="nombre_examen" placeholder="Nombre del Examen (ej: Glucosa)" required>
+                <div style="margin: 10px 0;">
+                    <input type="number" id="valor_minimo" step="0.01" placeholder="Mínimo" required>
+                    <span> hasta </span>
+                    <input type="number" id="valor_maximo" step="0.01" placeholder="Máximo" required>
+                </div>
+                <input type="text" id="unidad" placeholder="Unidad (ej: mg/dL)" required>
+                <button type="submit" class="btn-guardar">Guardar Rango de Referencia</button>
+            </form>
+        </div>
     </section>
 
     <hr>
 
     <section>
-        <h2>Diccionario de Referencias</h2>
+        <h2>Diccionario de Referencias Médicas</h2>
         <table border="1" id="valores-table">
             <thead>
                 <tr>
-                    <th>Examen</th><th>Rango Normal</th><th>Unidad</th><th>Acciones</th>
+                    <th>Examen</th>
+                    <th>Rango Normal</th>
+                    <th>Unidad</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -60,36 +68,76 @@
                 const valores = await response.json();
                 const tbody = document.querySelector('#valores-table tbody');
                 tbody.innerHTML = '';
+                
                 valores.forEach(v => {
                     tbody.innerHTML += `
                         <tr>
-                            <td>${v.nombre_examen}</td>
+                            <td><strong>${v.nombre_examen}</strong></td>
                             <td>${v.valor_minimo} - ${v.valor_maximo}</td>
                             <td>${v.unidad}</td>
-                            <td><button onclick="eliminarValor(${v.id})">Borrar</button></td>
+                            <td>
+                                <button onclick="eliminarValor(${v.id})" style="background:#ff4d4d; color:white; border:none; cursor:pointer; padding:3px 8px;">Borrar</button>
+                            </td>
                         </tr>`;
                 });
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("Error al cargar valores:", err); 
+            }
         }
 
         document.getElementById('valores-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const vMin = parseFloat(document.getElementById('valor_minimo').value);
+            const vMax = parseFloat(document.getElementById('valor_maximo').value);
+
+            if (vMin >= vMax) {
+                alert("Error lógico: El valor mínimo no puede ser mayor o igual al máximo.");
+                return;
+            }
+
             const datos = {
                 nombre_examen: document.getElementById('nombre_examen').value,
-                valor_minimo: document.getElementById('valor_minimo').value,
-                valor_maximo: document.getElementById('valor_maximo').value,
+                valor_minimo: vMin,
+                valor_maximo: vMax,
                 unidad: document.getElementById('unidad').value
             };
 
             const response = await fetch('/api/valores-referencia', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                headers: { 
+                    'Authorization': `Bearer ${token}`, 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify(datos)
             });
 
-            if (response.ok) location.reload();
-            else alert("Error al guardar valores");
+            if (response.ok) {
+                document.getElementById('valores-form').reset();
+                cargarValores();
+            } else {
+                alert("Error al guardar los valores de referencia");
+            }
         });
+
+        async function eliminarValor(id) {
+            if (!confirm("¿Eliminar este valor de referencia? Esto afectará la interpretación de futuros exámenes.")) return;
+
+            try {
+                const response = await fetch(`/api/valores-referencia/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    cargarValores();
+                } else {
+                    alert("No se pudo eliminar el valor.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
 
         cargarValores();
     </script>

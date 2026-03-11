@@ -31,6 +31,8 @@
 
     <script>
         const token = localStorage.getItem('token');
+        const rol = localStorage.getItem('rol');
+
         if (!token) window.location.href = '/login';
 
         function logout() {
@@ -47,16 +49,45 @@
                 const medicos = await response.json();
                 const tbody = document.querySelector('#medicos-table tbody');
                 tbody.innerHTML = '';
+                
                 medicos.forEach(m => {
                     tbody.innerHTML += `
                         <tr>
                             <td>${m.nombre}</td>
                             <td>${m.especialidad}</td>
                             <td>${m.codigo_colegiado}</td>
-                            <td><button onclick="eliminarMedico(${m.id})">Eliminar</button></td>
+                            <td>
+                                <button onclick="eliminarMedico(${m.id})" style="background:#ff4d4d; color:white; border:none; padding:3px 8px; cursor:pointer;">Eliminar</button>
+                            </td>
                         </tr>`;
                 });
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("Error al cargar médicos:", err); 
+            }
+        }
+
+        async function eliminarMedico(id) {
+            if (!confirm("¿Seguro que deseas eliminar este médico? Sus pacientes asignados quedarán con médico 'N/A'.")) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/medicos/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    alert("Médico eliminado");
+                    cargarMedicos();
+                } else {
+                    const errorData = await response.json();
+                    alert("Error: " + (errorData.error || "No se pudo eliminar"));
+                }
+            } catch (err) {
+                console.error("Error en la petición DELETE:", err);
+                alert("Error de conexión");
+            }
         }
 
         document.getElementById('medico-form').addEventListener('submit', async (e) => {
@@ -69,12 +100,17 @@
 
             const response = await fetch('/api/medicos', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                headers: { 
+                    'Authorization': `Bearer ${token}`, 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify(datos)
             });
 
-            if (response.ok) location.reload();
-            else {
+            if (response.ok) {
+                document.getElementById('medico-form').reset();
+                cargarMedicos();
+            } else {
                 const error = await response.json();
                 alert(error.error || "Error al registrar médico");
             }

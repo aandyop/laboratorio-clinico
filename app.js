@@ -1,21 +1,22 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 require('dotenv').config();
 
-var app = express(); 
+const app = express(); 
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var pacientesRouter = require('./routes/pacientes');
-var examenesRouter = require('./routes/examenes');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const pacientesRouter = require('./routes/pacientes');
+const examenesRouter = require('./routes/examenes');
 const medicosRouter = require('./routes/medicos');
 const inventarioRouter = require('./routes/inventario');
+const facturaRoutes = require('./routes/facturas');
 const valoresRouter = require('./routes/valoresReferencia');
 const authRouter = require('./routes/auth');
 
@@ -42,6 +43,7 @@ app.use('/api/pacientes', pacientesRouter);
 app.use('/api/examenes', examenesRouter);
 app.use('/api/medicos', medicosRouter);
 app.use('/api/inventario', inventarioRouter);
+app.use('/api/facturas', facturaRoutes);
 app.use('/api/valores-referencia', valoresRouter);
 
 app.use('/users', usersRouter);

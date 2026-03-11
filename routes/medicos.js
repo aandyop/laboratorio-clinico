@@ -3,7 +3,7 @@ const router = express.Router();
 const MedicoController = require('../controllers/medicoController');
 const { autenticarToken, tieneRol } = require('../middlewares/auth');
 
-router.get('/', MedicoController.listar);
+router.get('/', autenticarToken, MedicoController.listar);
 
 router.post('/', autenticarToken, tieneRol('ADMIN'), MedicoController.guardar);
 

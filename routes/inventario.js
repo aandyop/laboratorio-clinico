@@ -4,7 +4,7 @@ const InventarioController = require('../controllers/inventarioController');
 const { autenticarToken, tieneRol } = require('../middlewares/auth');
 
 router.get('/', autenticarToken, InventarioController.listar);
-router.post('/', autenticarToken, InventarioController.guardar);
+router.post('/', autenticarToken, tieneRol('ADMIN'), InventarioController.guardar);
 
 router.delete('/:id', autenticarToken, tieneRol('ADMIN'), InventarioController.borrar);
 
