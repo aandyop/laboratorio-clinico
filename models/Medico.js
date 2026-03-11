@@ -14,6 +14,11 @@ class Medico {
         );
         return result.insertId;
     }
+
+    static async eliminar(id) {
+        const [result] = await db.query('DELETE FROM medicos WHERE id = ?', [id]);
+        return result.affectedRows; 
+    }
 }
 
 module.exports = Medico;

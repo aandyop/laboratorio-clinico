@@ -5,18 +5,20 @@ const jwt = require('jsonwebtoken');
 class AuthController {
     static async login(req, res) {
         try {
-            const { username, password } = req.body;
+            const { email, password } = req.body;
 
-            if (!username || !password) {
-                return res.status(400).json({ error: "Faltan datos: Usuario y contraseña son obligatorios" });
+            if (!email || !password) {
+                return res.status(400).json({ error: "Email y contraseña son obligatorios" });
             }
 
-            const usuario = await Usuario.buscarPorUsername(username);
+            const usuario = await Usuario.buscarPorEmail(email);
+            
             if (!usuario) {
                 return res.status(401).json({ error: "Credenciales inválidas" });
             }
 
             const passwordValida = await bcrypt.compare(password, usuario.password);
+            
             if (!passwordValida) {
                 return res.status(401).json({ error: "Credenciales inválidas" });
             }
@@ -37,7 +39,7 @@ class AuthController {
             });
 
         } catch (error) {
-            console.error(error);
+            console.error("Error detallado en login:", error);
             res.status(500).json({ error: "Error interno del servidor" });
         }
     }

@@ -9,7 +9,7 @@
     <div class="login-container">
         <h1>Acceso al Sistema</h1>
         <form id="loginForm">
-            <input type="text" id="username" placeholder="Usuario" required>
+            <input type="email" id="email" placeholder="Correo Electrónico" required>
             <input type="password" id="password" placeholder="Contraseña" required>
             <button type="submit">Entrar</button>
         </form>
@@ -21,14 +21,15 @@
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('username').value;
+            
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
             try {
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ email, password })
                 });
 
                 const data = await response.json();
@@ -43,6 +44,7 @@
                 }
             } catch (error) {
                 console.error("Error en el login:", error);
+                document.getElementById('error-msg').innerText = "Error de conexión con el servidor";
             }
         });
     </script>

@@ -39,6 +39,23 @@ class MedicoController {
             res.status(500).json({ error: "Error interno al intentar registrar al médico." });
         }
     }
+
+    static async borrar(req, res) {
+        try {
+            const { id } = req.params;
+            
+            const resultado = await Medico.eliminar(id);
+            
+            if (resultado === 0) {
+                return res.status(404).json({ error: "No se encontró el médico que desea eliminar." });
+            }
+
+            res.json({ mensaje: "Médico eliminado correctamente del registro." });
+        } catch (error) {
+            console.error("Error al borrar médico:", error);
+            res.status(500).json({ error: "Error interno al intentar eliminar al especialista." });
+        }
+    }
 }
 
 module.exports = MedicoController;

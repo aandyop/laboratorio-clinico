@@ -7,29 +7,90 @@
 </head>
 <body>
     <nav>
-        <a href="/pacientes.html">Pacientes</a> | 
-        <a href="/examenes.html">Exámenes</a> |
-        <a href="/facturas.html"><strong>Facturación</strong></a> |
-        <a href="/medicos.html">Médicos</a> |
-        <a href="/inventario.html">Inventario</a> |
-        <a href="/valores.html">Valores Ref.</a>
+        <a href="/pacientes">Pacientes</a> | 
+        <a href="/examenes">Exámenes</a> |
+        <a href="/facturas"><strong>Facturación</strong></a> |
+        <a href="/medicos">Médicos</a> |
+        <a href="/inventario">Inventario</a> |
+        <a href="/valores">Valores Ref.</a>
+        <button onclick="logout()" style="float: right; background: #ff4d4d; color: white; border: none; padding: 5px 10px; cursor: pointer;">Cerrar Sesión</button>
     </nav>
 
     <h1>Facturación</h1>
     <form id="factura-form">
-        <select id="paciente_id" required><option value="">Paciente...</option></select>
+        <select id="paciente_id" required>
+            <option value="">Seleccione Paciente...</option>
+        </select>
         <input type="number" id="monto_total" step="0.01" placeholder="Monto" required>
         <select id="metodo_pago">
             <option value="Efectivo">Efectivo</option>
             <option value="Tarjeta">Tarjeta</option>
+            <option value="Transferencia">Transferencia</option>
         </select>
-        <button type="submit">Facturar</button>
+        <button type="submit">Generar Factura</button>
     </form>
     <hr>
     <table id="facturas-table" border="1">
         <thead><tr><th>Fecha</th><th>Paciente</th><th>Monto</th><th>Método</th></tr></thead>
         <tbody></tbody>
     </table>
-    <script src="/js/facturas-client.js"></script>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login';
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login';
+        }
+
+        async function cargarFacturacion() {
+            try {
+                const headers = { 'Authorization': `Bearer ${token}` };
+                
+                const resPacientes = await fetch('/api/pacientes', { headers });
+                const pacientes = await resPacientes.json();
+                const select = document.getElementById('paciente_id');
+                pacientes.forEach(p => {
+                    select.innerHTML += `<option value="${p.id}">${p.nombre}</option>`;
+                });
+
+                const resFacturas = await fetch('/api/facturas', { headers });
+                const facturas = await resFacturas.json();
+                const tbody = document.querySelector('#facturas-table tbody');
+                tbody.innerHTML = '';
+                facturas.forEach(f => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${new Date(f.fecha_emision).toLocaleDateString()}</td>
+                            <td>${f.paciente_nombre || 'N/A'}</td>
+                            <td>$${f.monto_total}</td>
+                            <td>${f.metodo_pago}</td>
+                        </tr>`;
+                });
+            } catch (err) { console.error("Error:", err); }
+        }
+
+        document.getElementById('factura-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const datos = {
+                paciente_id: document.getElementById('paciente_id').value,
+                monto_total: document.getElementById('monto_total').value,
+                metodo_pago: document.getElementById('metodo_pago').value
+            };
+
+            const response = await fetch('/api/facturas', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+
+            if (response.ok) location.reload();
+            else alert("Error al procesar factura");
+        });
+
+        cargarFacturacion();
+    </script>
 </body>
 </html>

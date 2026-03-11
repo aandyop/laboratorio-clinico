@@ -18,6 +18,11 @@ class Inventario {
     static async actualizarStock(id, nuevaCantidad) {
         await db.query('UPDATE inventario SET cantidad_stock = ? WHERE id = ?', [nuevaCantidad, id]);
     }
+
+    static async eliminar(id) {
+        const [result] = await db.query('DELETE FROM inventario WHERE id = ?', [id]);
+        return result.affectedRows;
+    }
 }
 
 module.exports = Inventario;

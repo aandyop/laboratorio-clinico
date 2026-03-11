@@ -6,13 +6,14 @@ class PacienteController {
             const pacientes = await Paciente.obtenerTodos();
             res.json(pacientes);
         } catch (error) {
+            console.error("Error al listar pacientes:", error);
             res.status(500).json({ error: "Error al obtener pacientes", detalle: error.message });
         }
     }
 
     static async guardar(req, res) {
         try {
-            const { nombre, cedula, telefono } = req.body;
+            const { nombre, cedula, telefono, medico_id } = req.body;
 
             if (!nombre || nombre.trim() === "") {
                 return res.status(400).json({ error: "El nombre del paciente es obligatorio." });
@@ -28,25 +29,38 @@ class PacienteController {
             res.status(201).json({ mensaje: "Paciente guardado con éxito", id: nuevoId });
             
         } catch (error) {
-            if (error.message.includes('UNIQUE')) {
+            console.error("Error al guardar paciente:", error);
+            
+            if (error.code === 'ER_DUP_ENTRY' || error.message.includes('UNIQUE')) {
                 return res.status(400).json({ error: "Ya existe un paciente registrado con esa cédula." });
             }
-            res.status(500).json({ error: "Error interno al guardar el paciente." });
+            
+            if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+                return res.status(400).json({ error: "El médico seleccionado no es válido o no existe." });
+            }
+
+            res.status(500).json({ error: "Error interno al guardar el paciente.", detalle: error.message });
         }
     }
 
     static async editar(req, res) {
         try {
             const { id } = req.params;
-            const { nombre, cedula } = req.body;
+            const { nombre, cedula, telefono, medico_id } = req.body;
 
-            if (nombre === "" || cedula === "") {
+            if (!nombre || !cedula) {
                 return res.status(400).json({ error: "No puede dejar el nombre o la cédula vacíos." });
             }
 
-            await Paciente.actualizar(id, req.body);
-            res.json({ mensaje: "Datos del paciente actualizados." });
+            const filasAfectadas = await Paciente.actualizar(id, req.body);
+            
+            if (filasAfectadas === 0) {
+                return res.status(404).json({ error: "Paciente no encontrado." });
+            }
+
+            res.json({ mensaje: "Datos del paciente actualizados correctamente." });
         } catch (error) {
+            console.error("Error al editar paciente:", error);
             res.status(500).json({ error: "Error al actualizar", detalle: error.message });
         }
     }
@@ -59,10 +73,19 @@ class PacienteController {
                 return res.status(400).json({ error: "Es necesario el ID del paciente para eliminarlo." });
             }
 
-            await Paciente.eliminar(id);
+            const filasEliminadas = await Paciente.eliminar(id);
+            
+            if (filasEliminadas === 0) {
+                return res.status(404).json({ error: "El paciente no existe." });
+            }
+
             res.json({ mensaje: "Paciente eliminado correctamente del sistema." });
         } catch (error) {
-            res.status(500).json({ error: "No se pudo eliminar el paciente. Verifique si tiene exámenes asociados." });
+            console.error("Error al borrar paciente:", error);
+            if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+                return res.status(400).json({ error: "No se puede eliminar el paciente porque tiene registros asociados (exámenes o facturas)." });
+            }
+            res.status(500).json({ error: "No se pudo eliminar el paciente." });
         }
     }
 }

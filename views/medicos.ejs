@@ -7,12 +7,13 @@
 </head>
 <body>
     <nav>
-        <a href="/pacientes.html">Pacientes</a> | 
-        <a href="/examenes.html">Exámenes</a> |
-        <a href="/facturas.html">Facturación</a> |
-        <a href="/medicos.html"><strong>Médicos</strong></a> |
-        <a href="/inventario.html">Inventario</a> |
-        <a href="/valores.html">Valores Ref.</a>
+        <a href="/pacientes">Pacientes</a> | 
+        <a href="/examenes">Exámenes</a> |
+        <a href="/facturas">Facturación</a> |
+        <a href="/medicos"><strong>Médicos</strong></a> |
+        <a href="/inventario">Inventario</a> |
+        <a href="/valores">Valores Ref.</a>
+        <button onclick="logout()" style="float: right; background: #ff4d4d; color: white; border: none; padding: 5px 10px; cursor: pointer;">Cerrar Sesión</button>
     </nav>
 
     <h1>Directorio Médico</h1>
@@ -24,9 +25,62 @@
     </form>
     <hr>
     <table id="medicos-table" border="1">
-        <thead><tr><th>Nombre</th><th>Especialidad</th><th>Código</th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Especialidad</th><th>Código</th><th>Acciones</th></tr></thead>
         <tbody></tbody>
     </table>
-    <script src="/js/medicos-client.js"></script>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login';
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login';
+        }
+
+        async function cargarMedicos() {
+            try {
+                const response = await fetch('/api/medicos', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const medicos = await response.json();
+                const tbody = document.querySelector('#medicos-table tbody');
+                tbody.innerHTML = '';
+                medicos.forEach(m => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${m.nombre}</td>
+                            <td>${m.especialidad}</td>
+                            <td>${m.codigo_colegiado}</td>
+                            <td><button onclick="eliminarMedico(${m.id})">Eliminar</button></td>
+                        </tr>`;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('medico-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const datos = {
+                nombre: document.getElementById('nombre').value,
+                especialidad: document.getElementById('especialidad').value,
+                codigo_colegiado: document.getElementById('codigo_colegiado').value
+            };
+
+            const response = await fetch('/api/medicos', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+
+            if (response.ok) location.reload();
+            else {
+                const error = await response.json();
+                alert(error.error || "Error al registrar médico");
+            }
+        });
+
+        cargarMedicos();
+    </script>
 </body>
 </html>

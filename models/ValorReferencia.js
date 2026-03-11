@@ -14,6 +14,11 @@ class ValorReferencia {
         );
         return result.insertId;
     }
+
+    static async eliminar(id) {
+        const [result] = await db.query('DELETE FROM valores_referencia WHERE id = ?', [id]);
+        return result.affectedRows;
+    }
 }
 
 module.exports = ValorReferencia;

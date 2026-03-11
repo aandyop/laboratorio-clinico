@@ -4,7 +4,6 @@ const ValorReferenciaController = require('../controllers/valorReferenciaControl
 const { autenticarToken, tieneRol } = require('../middlewares/auth');
 
 router.get('/', ValorReferenciaController.listar);
-
 router.post('/', autenticarToken, tieneRol('ADMIN'), ValorReferenciaController.guardar);
 router.delete('/:id', autenticarToken, tieneRol('ADMIN'), ValorReferenciaController.borrar);
 

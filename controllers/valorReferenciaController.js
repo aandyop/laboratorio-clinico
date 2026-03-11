@@ -48,6 +48,22 @@ class ValorReferenciaController {
             res.status(500).json({ error: "Error interno al procesar los valores de referencia." });
         }
     }
+
+    static async borrar(req, res) {
+        try {
+            const { id } = req.params;
+            const filasBorradas = await ValorReferencia.eliminar(id);
+
+            if (filasBorradas === 0) {
+                return res.status(404).json({ error: "No se encontró el rango de referencia para eliminar." });
+            }
+
+            res.json({ mensaje: "Rango de referencia eliminado correctamente." });
+        } catch (error) {
+            console.error("Error al borrar valor de referencia:", error);
+            res.status(500).json({ error: "Error interno al intentar eliminar el registro." });
+        }
+    }
 }
 
 module.exports = ValorReferenciaController;

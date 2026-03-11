@@ -44,6 +44,22 @@ class InventarioController {
             res.status(500).json({ error: "Error interno al procesar el registro de inventario." });
         }
     }
+
+    static async borrar(req, res) {
+        try {
+            const { id } = req.params;
+            const filasBorradas = await Inventario.eliminar(id);
+
+            if (filasBorradas === 0) {
+                return res.status(404).json({ error: "No se encontró el insumo para eliminar." });
+            }
+
+            res.json({ mensaje: "Insumo eliminado exitosamente del inventario." });
+        } catch (error) {
+            console.error("Error al borrar insumo:", error);
+            res.status(500).json({ error: "Error interno al intentar eliminar el insumo." });
+        }
+    }
 }
 
 module.exports = InventarioController;
