@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const MedicoController = require('../controllers/medicoController');
-const { verificarToken, tieneRol } = require('../middleware/authMiddleware');
+const { autenticarToken, tieneRol } = require('../middlewares/auth');
 
-router.get('/', verificarToken, MedicoController.listar);
+router.get('/', MedicoController.listar);
 
-router.post('/', verificarToken, tieneRol('ADMIN'), MedicoController.guardar);
+router.post('/', autenticarToken, tieneRol('ADMIN'), MedicoController.guardar);
+router.delete('/:id', autenticarToken, tieneRol('ADMIN'), MedicoController.borrar);
 
 module.exports = router;

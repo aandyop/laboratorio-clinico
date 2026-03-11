@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const PacienteController = require('../controllers/pacienteController');
+const { autenticarToken, tieneRol } = require('../middlewares/auth');
 
-// Endpoints
-router.get('/', PacienteController.listar);
-router.post('/', PacienteController.guardar);
-router.put('/:id', PacienteController.editar);
-router.delete('/:id', PacienteController.borrar);
+router.get('/', autenticarToken, PacienteController.listar);
+router.post('/', autenticarToken, PacienteController.guardar);
+router.put('/:id', autenticarToken, PacienteController.editar);
+
+router.delete('/:id', autenticarToken, tieneRol('ADMIN'), PacienteController.borrar);
 
 module.exports = router;
