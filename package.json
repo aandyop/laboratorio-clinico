@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-  "start": "node ./bin/www", 
-  "dev": "nodemon ./bin/www",
-  "migrate": "node database/migrations.js"
+    "start": "node ./bin/www",
+    "dev": "nodemon ./bin/www",
+    "migrate": "node scripts/migrate.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -18,6 +18,6 @@
     "http-errors": "~1.6.3",
     "jsonwebtoken": "^9.0.3",
     "morgan": "~1.9.1",
-    "mysql2": "^3.19.1"
+    "mysql2": "^3.20.0"
   }
 }

@@ -1,108 +1,66 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
+const fs = require('fs');
+const path = require('path');
+const bcrypt = require('bcrypt');
 
-async function migrarTodo() {
+async function ejecutarMigracionYSeed() {
+    const dbName = process.env.DB_NAME || 'laboratorio_clinico';
+    const adminEmail = 'admin@laboratorio.com';
+    const adminPass = 'admin123';
+
     const connection = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASS
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        multipleStatements: true 
     });
 
     try {
-        console.log("Iniciando proceso de migración total...");
+        console.log(`--- Iniciando limpieza total para: ${dbName} ---`);
 
-        await connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
-        await connection.query(`USE ${process.env.DB_NAME}`);
-        console.log(`Base de datos '${process.env.DB_NAME}' lista.`);
+        // ARREGLO CLAVE: Borrar la base de datos si existe para eliminar FKs antiguas
+        await connection.query(`DROP DATABASE IF EXISTS \`${dbName}\`;`);
+        await connection.query(`CREATE DATABASE \`${dbName}\`;`);
+        await connection.query(`USE \`${dbName}\`;`);
 
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS medicos (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(100) NOT NULL,
-                especialidad VARCHAR(100) NOT NULL,
-                codigo_colegiado VARCHAR(50) UNIQUE NOT NULL
-            )
-        `);
-        console.log("Tabla 'medicos' creada.");
+        const sqlPath = path.join(__dirname, '..', 'laboratorio_prueba.sql');
+        let sqlContent = fs.readFileSync(sqlPath, 'utf8');
 
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS pacientes (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(100) NOT NULL,
-                cedula VARCHAR(20) UNIQUE NOT NULL,
-                telefono VARCHAR(20),
-                medico_id INT,
-                FOREIGN KEY (medico_id) REFERENCES medicos(id) ON DELETE SET NULL
-            )
-        `);
-        console.log("Tabla 'pacientes' creada.");
+        // Limpieza del SQL para que no interfiera con nuestra conexión
+        sqlContent = sqlContent.replace(/CREATE DATABASE IF NOT EXISTS `.*?`;/g, '--');
+        sqlContent = sqlContent.replace(/USE `.*?`;/g, '--');
+        sqlContent = sqlContent.replace(/START TRANSACTION;/g, '--');
+        sqlContent = sqlContent.replace(/COMMIT;/g, '--');
 
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS examenes (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                paciente_id INT NOT NULL,
-                tipo_examen VARCHAR(100) NOT NULL,
-                resultado TEXT,
-                fecha DATE NOT NULL,
-                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
-            )
-        `);
-        console.log("Tabla 'examenes' creada (con borrado en cascada).");
+        // Inyectamos la desactivación de checks en la misma ejecución del SQL
+        const sqlFinal = `
+            SET FOREIGN_KEY_CHECKS = 0;
+            SET UNIQUE_CHECKS = 0;
+            ${sqlContent}
+            SET FOREIGN_KEY_CHECKS = 1;
+            SET UNIQUE_CHECKS = 1;
+        `;
 
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS facturas (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                paciente_id INT NOT NULL,
-                monto_total DECIMAL(10, 2) NOT NULL,
-                metodo_pago VARCHAR(50) NOT NULL,
-                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
-            )
-        `);
-        console.log("Tabla 'facturas' creada.");
+        console.log("1. Importando esquema limpio...");
+        await connection.query(sqlFinal);
+        console.log("   ✔ Estructura creada con éxito.");
 
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS inventario (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre_insumo VARCHAR(100) NOT NULL,
-                cantidad_stock INT NOT NULL,
-                unidad_medida VARCHAR(50) NOT NULL,
-                fecha_vencimiento DATE
-            )
-        `);
-        console.log("Tabla 'inventario' creada.");
-
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS valores_referencia (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre_examen VARCHAR(100) NOT NULL,
-                valor_minimo DECIMAL(10, 2) NOT NULL,
-                valor_maximo DECIMAL(10, 2) NOT NULL,
-                unidad VARCHAR(20) NOT NULL
-            )
-        `);
-        console.log("Tabla 'valores_referencia' creada.");
-
-        await connection.query(`
-            CREATE TABLE IF NOT EXISTS usuarios (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(50) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL,
-                rol ENUM('ADMIN', 'USER') DEFAULT 'USER',
-                fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        console.log("Tabla 'usuarios' creada para autenticación.");
-
-        console.log("\n ¡MIGRACIÓN COMPLETADA! El sistema está listo para usarse.");
+        // SEEDING: Administrador
+        console.log("2. Creando administrador...");
+        const hashedPassword = await bcrypt.hash(adminPass, 10);
+        await connection.query(
+            'INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)',
+            ['Admin Sistema', adminEmail, hashedPassword, 'ADMIN']
+        );
+        
+        console.log("\n🚀 ¡Migración completada! Ya puedes iniciar sesión.");
 
     } catch (error) {
-        console.error("ERROR DURANTE LA MIGRACIÓN:");
-        console.error(error.message);
+        console.error("\n❌ Error durante la migración:", error.message);
     } finally {
         await connection.end();
-        process.exit();
     }
 }
 
-migrarTodo();
+ejecutarMigracionYSeed();
