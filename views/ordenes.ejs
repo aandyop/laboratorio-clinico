@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Órdenes - Laboratorio</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <style>
+        .container { width: 90%; margin: auto; padding: 20px; }
+        .grid-ordenes { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+        }
+        .card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
+        .badge { padding: 5px 10px; border-radius: 4px; font-size: 0.8em; }
+        .pendiente { background: #ffeeba; color: #856404; }
+        .completada { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestión de Órdenes Médicas</h1>
+        
+        <section class="card">
+            <h3>Nueva Orden</h3>
+            <form id="formOrden">
+                <div class="form-group">
+                    <label>ID Paciente:</label>
+                    <input type="number" id="paciente_id" required min="1">
+                </div>
+                <div class="form-group">
+                    <label>ID Médico:</label>
+                    <input type="number" id="medico_id" required min="1">
+                </div>
+                <div class="form-group">
+                    <p>Seleccione Exámenes:</p>
+                    <label><input type="checkbox" name="examenes" value="1"> Hematología Completa</label><br>
+                    <label><input type="checkbox" name="examenes" value="2"> Glicemia</label>
+                </div>
+                <button type="submit">Generar Orden</button>
+            </form>
+        </section>
+
+        <hr>
+
+        <div class="grid-ordenes">
+            <% ordenes.forEach(orden => { %>
+                <div class="card">
+                    <h4>Orden #<%= orden.id %></h4>
+                    <p><strong>Paciente:</strong> <%= orden.paciente %></p>
+                    <p><strong>Médico:</strong> <%= orden.medico %></p>
+                    <p><strong>Fecha:</strong> <%= new Date(orden.fecha_orden).toLocaleDateString() %></p>
+                    <span class="badge <%= orden.estado.toLowerCase().replace(' ', '-') %>">
+                        <%= orden.estado %>
+                    </span>
+                    <br><br>
+                    <a href="/ordenes/<%= orden.id %>/resultados" class="btn">Ver/Cargar Resultados</a>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('formOrden').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const examenes = Array.from(document.querySelectorAll('input[name="examenes"]:checked')).map(cb => cb.value);
+            
+            const data = {
+                paciente_id: document.getElementById('paciente_id').value,
+                medico_id: document.getElementById('medico_id').value,
+                examenes_ids: examenes
+            };
+
+            const response = await fetch('/ordenes/crear', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if(response.ok) {
+                alert("Orden creada con éxito");
+                location.reload();
+            } else {
+                alert("Error al crear la orden");
+            }
+        });
+    </script>
+</body>
+</html>

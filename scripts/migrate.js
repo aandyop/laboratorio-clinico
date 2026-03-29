@@ -49,8 +49,10 @@ async function ejecutarMigracionYSeed() {
         // SEEDING: Administrador
         console.log("2. Creando administrador...");
         const hashedPassword = await bcrypt.hash(adminPass, 10);
+
+        // Cambiamos INSERT por INSERT IGNORE
         await connection.query(
-            'INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)',
+            'INSERT IGNORE INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)',
             ['Admin Sistema', adminEmail, hashedPassword, 'ADMIN']
         );
         
