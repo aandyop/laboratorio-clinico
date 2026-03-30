@@ -5,6 +5,6 @@ const { autenticarToken } = require('../middlewares/auth');
 
 router.get('/orden/:ordenId', ResultadoController.verPorOrden);
 
-router.post('/guardar', autenticarToken, ResultadoController.registrarValor);
+router.post('/guardar', ResultadoController.registrarValor);
 
 module.exports = router;

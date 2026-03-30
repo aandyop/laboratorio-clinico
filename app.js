@@ -21,6 +21,7 @@ const valoresRouter = require('./routes/valoresReferencia');
 const authRouter = require('./routes/auth');
 const ordenesRouter = require('./routes/ordenes');
 const resultadosRouter = require('./routes/resultados');
+const reporteRoutes = require('./routes/reporteRoutes');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -49,6 +50,7 @@ app.use('/api/facturas', facturaRoutes);
 app.use('/api/valores-referencia', valoresRouter);
 app.use('/ordenes', ordenesRouter);
 app.use('/resultados', resultadosRouter);
+app.use('/reportes', reporteRoutes);
 
 app.use('/users', usersRouter);
 app.use('/', indexRouter);

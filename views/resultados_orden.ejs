@@ -4,19 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carga de Resultados - Laboratorio</title>
-    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .fuera-rango { border: 2px solid #ff4d4d !important; background-color: #fff2f2; }
-        .rango-normal { color: #666; font-size: 0.85em; }
-        .unidad { font-weight: bold; color: #333; }
+        body { background-color: #f8f9fa; padding-top: 50px; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+        .fuera-rango { border: 2px solid #dc3545 !important; background-color: #f8d7da !important; color: #842029; }
+        .rango-normal { color: #6c757d; font-size: 0.9em; }
+        .unidad { font-weight: bold; color: #212529; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Resultados: Orden #<%= ordenId %></h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Resultados: Orden #<%= ordenId %></h2>
+            <a href="/reportes/descargar/<%= ordenId %>" class="btn btn-danger">
+                Descargar Reporte PDF
+            </a>
+        </div>
         
-        <table class="table">
-            <thead>
+        <table class="table table-hover">
+            <thead class="table-dark">
                 <tr>
                     <th>Examen</th>
                     <th>Referencia (Mín - Máx)</th>
@@ -27,38 +34,42 @@
             <tbody>
                 <% resultados.forEach(res => { %>
                     <tr>
-                        <td><%= res.examen_nombre %></td>
-                        <td class="rango-normal">
+                        <td class="align-middle"><%= res.examen_nombre %></td>
+                        <td class="align-middle rango-normal">
                             <%= res.minimo %> - <%= res.maximo %> <span class="unidad"><%= res.unidad %></span>
                         </td>
                         <td>
                             <input type="number" step="0.01" 
                                    id="input-<%= res.id %>" 
                                    value="<%= res.valor_obtenido %>"
-                                   class="form-control <%= res.fuera_de_rango ? 'fuera-rango' : '' %>">
+                                   class="form-control <%= res.fuera_de_rango ? 'fuera-rango' : '' %>"
+                                   placeholder="Ingresar valor">
                         </td>
-                        <td>
-                            <button class="btn-save" onclick="enviarResultado(<%= res.id %>)">Guardar</button>
+                        <td class="align-middle">
+                            <button class="btn btn-primary w-100" onclick="enviarResultado(<%= res.id %>)">
+                                Guardar
+                            </button>
                         </td>
                     </tr>
                 <% }) %>
             </tbody>
         </table>
-        <br>
-        <a href="/ordenes" class="btn-link">Volver a Órdenes</a>
+        
+        <div class="mt-4">
+            <a href="/ordenes" class="btn btn-outline-secondary">Volver a Órdenes</a>
+        </div>
     </div>
 
     <script>
         async function enviarResultado(id) {
-            const valor = document.getElementById(`input-${id}`).value;
-            const token = localStorage.getItem('token');
+            const inputElement = document.getElementById(`input-${id}`);
+            const valor = inputElement.value;
 
             try {
                 const response = await fetch('/resultados/guardar', {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ resultado_id: id, valor_obtenido: valor })
                 });
@@ -67,15 +78,18 @@
                 
                 if (response.ok) {
                     if (data.fueraDeRango) {
-                        document.getElementById(`input-${id}`).classList.add('fuera-rango');
-                        alert("⚠️ ¡Atención! El valor está fuera de rango.");
+                        inputElement.classList.add('fuera-rango');
+                        alert("⚠️ VALOR FUERA DE RANGO: Se ha marcado en el sistema.");
                     } else {
-                        document.getElementById(`input-${id}`).classList.remove('fuera-rango');
+                        inputElement.classList.remove('fuera-rango');
                         alert("✅ Resultado guardado correctamente.");
                     }
+                } else {
+                    alert("❌ Error: " + (data.error || "No se pudo guardar"));
                 }
             } catch (error) {
-                alert("Error de conexión al guardar.");
+                console.error(error);
+                alert("Error de conexión con el servidor.");
             }
         }
     </script>
