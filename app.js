@@ -20,6 +20,7 @@ const facturaRoutes = require('./routes/facturas');
 const valoresRouter = require('./routes/valoresReferencia');
 const authRouter = require('./routes/auth');
 const ordenesRouter = require('./routes/ordenes');
+const resultadosRouter = require('./routes/resultados');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -47,6 +48,7 @@ app.use('/api/inventario', inventarioRouter);
 app.use('/api/facturas', facturaRoutes);
 app.use('/api/valores-referencia', valoresRouter);
 app.use('/ordenes', ordenesRouter);
+app.use('/resultados', resultadosRouter);
 
 app.use('/users', usersRouter);
 app.use('/', indexRouter);
