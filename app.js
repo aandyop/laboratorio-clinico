@@ -22,6 +22,7 @@ const authRouter = require('./routes/auth');
 const ordenesRouter = require('./routes/ordenes');
 const resultadosRouter = require('./routes/resultados');
 const reporteRoutes = require('./routes/reporteRoutes');
+const dashboardRouter = require('./routes/dashboardRoutes');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -30,7 +31,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/login', (req, res) => res.render('login'));
-app.get('/', (req, res) => res.redirect('/login')); 
+app.get('/', (req, res) => {
+    res.render('index', { title: 'Panel de Control - Laboratorio' });
+});
 
 app.get('/medicos', (req, res) => res.render('medicos'));
 app.get('/valores', (req, res) => res.render('valoresReferencia')); 
@@ -51,6 +54,7 @@ app.use('/api/valores-referencia', valoresRouter);
 app.use('/ordenes', ordenesRouter);
 app.use('/resultados', resultadosRouter);
 app.use('/reportes', reporteRoutes);
+app.use('/api/dashboard', dashboardRouter);
 
 app.use('/users', usersRouter);
 app.use('/', indexRouter);
