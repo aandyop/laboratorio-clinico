@@ -3,7 +3,7 @@ const router = express.Router();
 const InventarioController = require('../controllers/inventarioController');
 const { autenticarToken, tieneRol } = require('../middlewares/auth');
 
-router.get('/', autenticarToken, InventarioController.listar);
+router.get('/', InventarioController.listar);
 
 router.post('/', autenticarToken, tieneRol('ADMIN'), InventarioController.crear);
 
