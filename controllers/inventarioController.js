@@ -6,11 +6,12 @@ class InventarioController {
             const items = await Inventario.obtenerTodo();
             res.json(items);
         } catch (error) {
+            console.error("Error al listar inventario:", error);
             res.status(500).json({ error: "Error al consultar el stock del inventario." });
         }
     }
 
-    static async guardar(req, res) {
+    static async crear(req, res) {
         try {
             const { nombre_insumo, cantidad_stock, unidad_medida, fecha_vencimiento } = req.body;
 
@@ -19,15 +20,12 @@ class InventarioController {
             }
 
             const cantidad = parseInt(cantidad_stock);
-            if (isNaN(cantidad)) {
-                return res.status(400).json({ error: "La cantidad de stock debe ser un número válido." });
-            }
-            if (cantidad < 0) {
-                return res.status(400).json({ error: "No se permiten cantidades de stock negativas." });
+            if (isNaN(cantidad) || cantidad < 0) {
+                return res.status(400).json({ error: "La cantidad debe ser un número válido y no negativa." });
             }
 
             if (!unidad_medida || unidad_medida.trim() === "") {
-                return res.status(400).json({ error: "Debe especificar la unidad de medida (ej: Unidades, ml, mg)." });
+                return res.status(400).json({ error: "Debe especificar la unidad de medida." });
             }
 
             const id = await Inventario.crear({
@@ -37,24 +35,24 @@ class InventarioController {
                 fecha_vencimiento: fecha_vencimiento || null
             });
 
-            res.status(201).json({ mensaje: "Insumo registrado correctamente", id });
+            res.status(201).json({ success: true, mensaje: "Insumo registrado correctamente", id });
             
         } catch (error) {
-            console.error("Error en InventarioController:", error);
-            res.status(500).json({ error: "Error interno al procesar el registro de inventario." });
+            console.error("Error al crear insumo:", error);
+            res.status(500).json({ error: "Error interno al procesar el registro." });
         }
     }
 
-    static async borrar(req, res) {
+    static async eliminar(req, res) {
         try {
             const { id } = req.params;
             const filasBorradas = await Inventario.eliminar(id);
 
             if (filasBorradas === 0) {
-                return res.status(404).json({ error: "No se encontró el insumo para eliminar." });
+                return res.status(404).json({ error: "No se encontró el insumo." });
             }
 
-            res.json({ mensaje: "Insumo eliminado exitosamente del inventario." });
+            res.json({ success: true, mensaje: "Insumo eliminado exitosamente." });
         } catch (error) {
             console.error("Error al borrar insumo:", error);
             res.status(500).json({ error: "Error interno al intentar eliminar el insumo." });
