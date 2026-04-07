@@ -3,133 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Sistema de Gestión Laboratorio</title>
+    <title>Dashboard - LabSys</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
         .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .stat-card { border: none; border-radius: 15px; transition: transform 0.3s; }
-        .stat-card:hover { transform: translateY(-5px); }
-        .icon-box { width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 15px; }
+        
+        /* Estilo de Tarjetas de Estadísticas */
+        .stat-card { 
+            border: none; 
+            border-radius: 15px; 
+            transition: all 0.3s ease; 
+            background: white;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+        
+        .icon-box { 
+            width: 50px; 
+            height: 50px; 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.2rem; 
+            margin-bottom: 1rem; 
+        }
+        
+        /* Colores Temáticos */
         .bg-invoice { background-color: #e7f1ff; color: #0d6efd; }
         .bg-inventory { background-color: #fff0f0; color: #dc3545; }
         .bg-alerts { background-color: #fff9e6; color: #ffc107; }
-        .quick-action-btn { border-radius: 10px; padding: 15px; text-align: center; background: white; border: 1px solid #dee2e6; color: #495057; text-decoration: none; transition: all 0.2s; }
-        .quick-action-btn:hover { background: #0d6efd; color: white; border-color: #0d6efd; }
+        .bg-success-light { background-color: #e8f5e9; color: #2e7d32; }
+
+        /* Botones de Acción Rápida */
+        .quick-action-btn { 
+            border-radius: 15px; 
+            padding: 20px; 
+            text-align: center; 
+            background: white; 
+            border: 1px solid #edf2f7; 
+            color: #4a5568; 
+            text-decoration: none; 
+            transition: all 0.2s;
+            display: block;
+            height: 100%;
+        }
+        .quick-action-btn i { font-size: 2rem; margin-bottom: 10px; color: #0d6efd; }
+        .quick-action-btn:hover { 
+            background: #0d6efd; 
+            color: white; 
+            border-color: #0d6efd; 
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+        }
+        .quick-action-btn:hover i { color: white; }
     </style>
 </head>
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-microscope me-2"></i>LabSys Dashboard</a>
-            <div class="navbar-nav me-auto">
-                <a class="nav-link" href="/pacientes">Pacientes</a>
-                <a class="nav-link" href="/examenes">Exámenes</a>
-                <a class="nav-link" href="/inventario">Inventario</a>
-                <a class="nav-link" href="/facturas">Facturación</a>
-            </div>
-            <button onclick="logout()" class="btn btn-outline-danger btn-sm">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-microscope me-2 text-warning"></i>LabSys</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
             </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link active" href="/"><i class="fas fa-home me-1"></i> Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/pacientes">Pacientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ordenes">Órdenes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/examenes">Exámenes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/facturas">Facturación</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Configuración</a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><a class="dropdown-item" href="/inventario"><i class="fas fa-boxes me-2"></i>Inventario</a></li>
+                            <li><a class="dropdown-item" href="/medicos"><i class="fas fa-user-md me-2"></i>Médicos</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/valores"><i class="fas fa-cog me-2"></i>Valores Ref.</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="text-light me-3 small" id="user-display"><i class="far fa-user-circle me-1"></i> Usuario</span>
+                    <button onclick="logout()" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                        <i class="fas fa-power-off"></i> Salir
+                    </button>
+                </div>
+            </div>
         </div>
     </nav>
 
     <div class="container">
-        <h2 class="mb-4">Resumen Operativo del Día</h2>
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold text-dark mb-1">Panel de Control</h2>
+                <p class="text-muted">Resumen operativo para hoy, <span class="text-primary fw-bold" id="current-date"></span></p>
+            </div>
+        </div>
         
         <div class="row mb-5">
-            <div class="col-md-4 mb-3">
-                <div class="card stat-card shadow-sm p-3">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card shadow-sm h-100 p-2">
                     <div class="card-body">
-                        <div class="icon-box bg-invoice"><i class="fas fa-file-invoice-dollar"></i></div>
-                        <h6 class="text-muted small text-uppercase fw-bold">Facturación Hoy</h6>
-                        <h2 id="total-hoy" class="fw-bold">$0.00</h2>
+                        <div class="icon-box bg-invoice"><i class="fas fa-dollar-sign"></i></div>
+                        <h6 class="text-muted small text-uppercase fw-bold">Facturación</h6>
+                        <h3 id="total-hoy" class="fw-bold mb-0">$0.00</h3>
+                        <small class="text-success fw-bold"><i class="fas fa-arrow-up"></i> Ingresos de hoy</small>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card stat-card shadow-sm p-3">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card shadow-sm h-100 p-2">
                     <div class="card-body">
-                        <div class="icon-box bg-inventory"><i class="fas fa-boxes"></i></div>
-                        <h6 class="text-muted small text-uppercase fw-bold">Insumos Críticos</h6>
-                        <h2 id="stock-critico" class="fw-bold text-danger">0</h2>
-                        <p class="small text-muted mb-0">Menos de 10 unidades</p>
+                        <div class="icon-box bg-success-light"><i class="fas fa-vial"></i></div>
+                        <h6 class="text-muted small text-uppercase fw-bold">Órdenes Hoy</h6>
+                        <h3 id="ordenes-hoy" class="fw-bold mb-0">0</h3>
+                        <small class="text-muted">Pendientes por procesar</small>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card stat-card shadow-sm p-3">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card shadow-sm h-100 p-2">
                     <div class="card-body">
-                        <div class="icon-box bg-alerts"><i class="fas fa-heartbeat"></i></div>
-                        <h6 class="text-muted small text-uppercase fw-bold">Alertas Médicas</h6>
-                        <h2 id="alertas-medicas" class="fw-bold">0</h2>
-                        <p class="small text-muted mb-0">Resultados fuera de rango</p>
+                        <div class="icon-box bg-inventory"><i class="fas fa-exclamation-triangle"></i></div>
+                        <h6 class="text-muted small text-uppercase fw-bold">Stock Crítico</h6>
+                        <h3 id="stock-critico" class="fw-bold text-danger mb-0">0</h3>
+                        <small class="text-muted small">Insumos bajo el mínimo</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card shadow-sm h-100 p-2">
+                    <div class="card-body">
+                        <div class="icon-box bg-alerts"><i class="fas fa-bell"></i></div>
+                        <h6 class="text-muted small text-uppercase fw-bold">Alertas Salud</h6>
+                        <h3 id="alertas-medicas" class="fw-bold mb-0">0</h3>
+                        <small class="text-muted">Resultados fuera de rango</small>
                     </div>
                 </div>
             </div>
         </div>
 
-        <h4 class="mb-3">Gestión Rápida</h4>
+        <h5 class="fw-bold mb-3 text-dark">Accesos Directos</h5>
         <div class="row g-3 mb-5">
-            <div class="col-6 col-md-3">
-                <a href="/pacientes" class="quick-action-btn d-block">
-                    <i class="fas fa-user-plus d-block mb-2 fs-3"></i> Nuevo Paciente
+            <div class="col-md-2 col-sm-4 col-6">
+                <a href="/pacientes" class="quick-action-btn">
+                    <i class="fas fa-user-plus"></i>
+                    <span class="d-block fw-bold small">Pacientes</span>
                 </a>
             </div>
-            <div class="col-6 col-md-3">
-                <a href="/ordenes" class="quick-action-btn d-block">
-                    <i class="fas fa-clipboard-list d-block mb-2 fs-3"></i> Crear Orden
+            <div class="col-md-2 col-sm-4 col-6">
+                <a href="/ordenes" class="quick-action-btn">
+                    <i class="fas fa-file-medical"></i>
+                    <span class="d-block fw-bold small">Nueva Orden</span>
                 </a>
             </div>
-            <div class="col-6 col-md-3">
-                <a href="/inventario" class="quick-action-btn d-block">
-                    <i class="fas fa-pills d-block mb-2 fs-3"></i> Reponer Stock
+            <div class="col-md-2 col-sm-4 col-6">
+                <a href="/examenes" class="quick-action-btn">
+                    <i class="fas fa-microscope"></i>
+                    <span class="d-block fw-bold small">Catálogo Exámenes</span>
                 </a>
             </div>
-            <div class="col-6 col-md-3">
-                <a href="/facturas" class="quick-action-btn d-block">
-                    <i class="fas fa-cash-register d-block mb-2 fs-3"></i> Nueva Factura
+            <div class="col-md-2 col-sm-4 col-6">
+                <a href="/facturas" class="quick-action-btn">
+                    <i class="fas fa-receipt"></i>
+                    <span class="d-block fw-bold small">Facturar</span>
+                </a>
+            </div>
+            <div class="col-md-2 col-sm-4 col-6">
+                <a href="/inventario" class="quick-action-btn">
+                    <i class="fas fa-boxes"></i>
+                    <span class="d-block fw-bold small">Inventario</span>
+                </a>
+            </div>
+            <div class="col-md-2 col-sm-4 col-6">
+                <a href="/medicos" class="quick-action-btn">
+                    <i class="fas fa-user-md"></i>
+                    <span class="d-block fw-bold small">Médicos</span>
                 </a>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = '/login';
-        }
+        const rol = localStorage.getItem('rol');
+
+        // Seguridad Básica
+        if (!token) window.location.href = '/login';
+        
+        // Mostrar datos de sesión
+        document.getElementById('user-display').innerHTML = `<i class="fas fa-user-shield me-1"></i> ${rol || 'Usuario'}`;
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
         function logout() {
-            localStorage.removeItem('token');
+            localStorage.clear();
             window.location.href = '/login';
         }
 
         async function cargarDashboard() {
             try {
                 const response = await fetch('/api/dashboard', {
-                    method: 'GET',
-                    headers: { 
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    
                     document.getElementById('total-hoy').textContent = '$' + (data.totalFacturado || '0.00');
                     document.getElementById('stock-critico').textContent = data.insumosBajos || '0';
                     document.getElementById('alertas-medicas').textContent = data.alertasSalud || '0';
-                } else if (response.status === 401 || response.status === 403) {
-                    logout();
+                    document.getElementById('ordenes-hoy').textContent = data.totalOrdenes || '0';
                 }
             } catch (err) {
-                console.error("Error al cargar datos del dashboard:", err);
+                console.error("No se pudo conectar con la API de estadísticas.");
             }
         }
 

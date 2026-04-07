@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const OrdenController = require('../controllers/ordenController');
-const { autenticarToken, tieneRol } = require('../middlewares/auth');
+const { autenticarToken } = require('../middlewares/auth');
 
-// Listar todas las órdenes (Accesible para ADMIN y BIOANALISTA)
+// Obtener listado de órdenes (GET /api/ordenes)
 router.get('/', autenticarToken, OrdenController.listar);
 
-// Crear una nueva orden (Solo ADMIN o Recepción)
-router.post('/crear', autenticarToken, OrdenController.crearOrden);
+// Crear nueva orden (POST /api/ordenes)
+router.post('/', autenticarToken, OrdenController.crearOrden);
 
 module.exports = router;

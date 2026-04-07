@@ -3,26 +3,33 @@ const ValorReferencia = require('../models/ValorReferencia');
 class ValorReferenciaController {
     static async listar(req, res) {
         try {
-            const valores = await ValorReferencia.obtenerTodo();
-            res.json(valores);
+            // Cambiado a obtenerTodos() para coincidir con el modelo corregido
+            const valores = await ValorReferencia.obtenerTodos();
+            
+            // Si por alguna razón valores es null, enviamos un array vacío para que el .forEach no rompa el frontend
+            res.json(valores || []); 
         } catch (error) {
+            console.error("Error al listar valores:", error);
             res.status(500).json({ error: "Error al consultar los rangos de referencia." });
         }
     }
 
     static async guardar(req, res) {
         try {
-            const { nombre_examen, valor_minimo, valor_maximo, unidad } = req.body;
+            // IMPORTANTE: Extraemos examen_id, minimo y maximo para coincidir con la DB
+            const { examen_id, minimo, maximo, unidad } = req.body;
 
-            if (!nombre_examen || nombre_examen.trim() === "") {
-                return res.status(400).json({ error: "El nombre del examen es obligatorio." });
+            // Validación de examen_id para evitar el error ER_BAD_NULL_ERROR
+            if (!examen_id) {
+                return res.status(400).json({ error: "Debe seleccionar un examen válido." });
             }
+            
             if (!unidad || unidad.trim() === "") {
-                return res.status(400).json({ error: "Debe especificar la unidad de medida (mg/dL, g/L, etc.)." });
+                return res.status(400).json({ error: "Debe especificar la unidad de medida." });
             }
 
-            const min = parseFloat(valor_minimo);
-            const max = parseFloat(valor_maximo);
+            const min = parseFloat(minimo);
+            const max = parseFloat(maximo);
 
             if (isNaN(min) || isNaN(max)) {
                 return res.status(400).json({ error: "Los valores de referencia deben ser números válidos." });
@@ -34,10 +41,11 @@ class ValorReferenciaController {
                 });
             }
 
+            // Enviamos los datos al modelo con los nombres correctos: minimo y maximo
             const id = await ValorReferencia.crear({
-                nombre_examen: nombre_examen.trim(),
-                valor_minimo: min,
-                valor_maximo: max,
+                examen_id: parseInt(examen_id),
+                minimo: min,
+                maximo: max,
                 unidad: unidad.trim()
             });
 

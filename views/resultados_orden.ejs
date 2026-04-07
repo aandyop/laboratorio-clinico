@@ -3,60 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carga de Resultados - Laboratorio</title>
+    <title>Carga de Resultados - LabSys</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; padding-top: 50px; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-        .fuera-rango { border: 2px solid #dc3545 !important; background-color: #f8d7da !important; color: #842029; }
-        .rango-normal { color: #6c757d; font-size: 0.9em; }
-        .unidad { font-weight: bold; color: #212529; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        .work-container { 
+            max-width: 900px; 
+            margin: 40px auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+        }
+        
+        .fuera-rango { 
+            border-color: #dc3545 !important; 
+            background-color: #fff5f5 !important; 
+            color: #dc3545 !important; 
+            font-weight: bold;
+            animation: shake 0.4s;
+        }
+        .en-rango { 
+            border-color: #198754 !important; 
+            background-color: #f8fff9 !important; 
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .ref-box {
+            font-family: 'Courier New', Courier, monospace;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        .btn-pdf { background-color: #e02424; border: none; transition: 0.3s; }
+        .btn-pdf:hover { background-color: #b91c1c; transform: scale(1.02); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Resultados: Orden #<%= ordenId %></h2>
-            <a href="/reportes/descargar/<%= ordenId %>" class="btn btn-danger">
-                Descargar Reporte PDF
+
+    <script>
+        if (!localStorage.getItem('token')) {
+            window.location.href = '/login';
+        }
+    </script>
+
+    <div class="container work-container">
+        <div class="d-flex justify-content-between align-items-start mb-5 border-bottom pb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="/ordenes" class="text-decoration-none">Órdenes</a></li>
+                        <li class="breadcrumb-item active">Resultados</li>
+                    </ol>
+                </nav>
+                <h2 class="fw-bold text-dark">
+                    <i class="fas fa-vial text-primary me-2"></i>Orden #<%= ordenId %>
+                </h2>
+                <span class="badge bg-light text-dark border">
+                    <i class="far fa-user me-1"></i> Paciente: <%= nombrePaciente %>
+                </span>
+            </div>
+            
+            <a href="/reportes/descargar/<%= ordenId %>" class="btn btn-pdf text-white shadow-sm px-4">
+                <i class="fas fa-file-pdf me-2"></i>Generar Informe PDF
             </a>
         </div>
         
-        <table class="table table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Examen</th>
-                    <th>Referencia (Mín - Máx)</th>
-                    <th>Valor Obtenido</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% resultados.forEach(res => { %>
+        <div class="table-responsive">
+            <table class="table table-borderless align-middle">
+                <thead class="text-muted small text-uppercase">
                     <tr>
-                        <td class="align-middle"><%= res.examen_nombre %></td>
-                        <td class="align-middle rango-normal">
-                            <%= res.minimo %> - <%= res.maximo %> <span class="unidad"><%= res.unidad %></span>
-                        </td>
-                        <td>
-                            <input type="number" step="0.01" 
-                                   id="input-<%= res.id %>" 
-                                   value="<%= res.valor_obtenido %>"
-                                   class="form-control <%= res.fuera_de_rango ? 'fuera-rango' : '' %>"
-                                   placeholder="Ingresar valor">
-                        </td>
-                        <td class="align-middle">
-                            <button class="btn btn-primary w-100" onclick="enviarResultado(<%= res.id %>)">
-                                Guardar
-                            </button>
-                        </td>
+                        <th style="width: 35%">Examen Analizado</th>
+                        <th style="width: 25%">Rango Referencia</th>
+                        <th style="width: 25%">Valor Final</th>
+                        <th class="text-end">Guardar</th>
                     </tr>
-                <% }) %>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <% resultados.forEach(res => { %>
+                        <tr class="border-bottom">
+                            <td>
+                                <div class="fw-bold text-dark"><%= res.examen_nombre %></div>
+                                <div class="text-muted extra-small" style="font-size: 0.75rem;">ID de prueba: <%= res.id %></div>
+                            </td>
+                            <td>
+                                <span class="ref-box">
+                                    <%= res.minimo %> - <%= res.maximo %>
+                                </span>
+                                <span class="ms-1 text-info fw-bold small"><%= res.unidad %></span>
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" 
+                                       id="input-<%= res.id %>" 
+                                       value="<%= res.valor_obtenido %>"
+                                       class="form-control form-control-lg shadow-sm <%= res.fuera_de_rango ? 'fuera-rango' : '' %>"
+                                       placeholder="0.00">
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-primary btn-sm rounded-circle shadow-sm p-2" 
+                                        onclick="enviarResultado(<%= res.id %>)" 
+                                        title="Guardar este resultado">
+                                    <i class="fas fa-save px-1"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
         
-        <div class="mt-4">
-            <a href="/ordenes" class="btn btn-outline-secondary">Volver a Órdenes</a>
+        <div class="mt-5 d-flex justify-content-between align-items-center">
+            <a href="/ordenes" class="btn btn-link text-muted text-decoration-none">
+                <i class="fas fa-arrow-left me-2"></i>Volver a la lista
+            </a>
+            <div class="text-muted small italic">
+                <i class="fas fa-info-circle me-1"></i> Los valores fuera de rango se marcarán en rojo automáticamente.
+            </div>
         </div>
     </div>
 
@@ -64,32 +135,43 @@
         async function enviarResultado(id) {
             const inputElement = document.getElementById(`input-${id}`);
             const valor = inputElement.value;
+            const token = localStorage.getItem('token');
+
+            if (!valor) {
+                alert("Por favor, ingrese un valor numérico.");
+                return;
+            }
 
             try {
+                inputElement.style.opacity = "0.5";
+
                 const response = await fetch('/resultados/guardar', {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token 
                     },
                     body: JSON.stringify({ resultado_id: id, valor_obtenido: valor })
                 });
 
                 const data = await response.json();
+                inputElement.style.opacity = "1";
                 
                 if (response.ok) {
                     if (data.fueraDeRango) {
                         inputElement.classList.add('fuera-rango');
-                        alert("⚠️ VALOR FUERA DE RANGO: Se ha marcado en el sistema.");
+                        inputElement.classList.remove('en-rango');
                     } else {
                         inputElement.classList.remove('fuera-rango');
-                        alert("✅ Resultado guardado correctamente.");
+                        inputElement.classList.add('en-rango');
                     }
                 } else {
-                    alert("❌ Error: " + (data.error || "No se pudo guardar"));
+                    alert("Error: " + (data.error || "No se pudo procesar"));
                 }
             } catch (error) {
                 console.error(error);
-                alert("Error de conexión con el servidor.");
+                inputElement.style.opacity = "1";
+                alert("Error de red o conexión.");
             }
         }
     </script>

@@ -1,6 +1,5 @@
 const Orden = require('../models/Orden');
 const Resultado = require('../models/Resultado');
-const Examen = require('../models/Examen');
 
 class OrdenController {
     static async crearOrden(req, res) {
@@ -9,6 +8,7 @@ class OrdenController {
         try {
             const ordenId = await Orden.crear({ paciente_id, medico_id });
 
+            // Si hay exámenes asociados, se crean los registros de resultados "vacíos"
             if (examenes_ids && examenes_ids.length > 0) {
                 for (let examenId of examenes_ids) {
                     await Resultado.registrar({
@@ -22,17 +22,18 @@ class OrdenController {
 
             res.status(201).json({ mensaje: "Orden creada con éxito", ordenId });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: "Error al crear la orden" });
+            console.error("Error al crear orden:", error);
+            res.status(500).json({ error: "Error interno al crear la orden" });
         }
     }
 
     static async listar(req, res) {
         try {
             const ordenes = await Orden.listarTodas();
-            res.render('ordenes', { ordenes }); // Crear vista ejs
+            res.json(ordenes);
         } catch (error) {
-            res.status(500).send("Error al cargar órdenes");
+            console.error("Error al listar órdenes:", error);
+            res.status(500).json({ error: "Error al cargar órdenes" });
         }
     }
 }

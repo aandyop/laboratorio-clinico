@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directorio Médico - LabSys</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .navbar-public { background-color: #212529; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .search-section { 
+            background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+        }
+        .medico-card {
+            border: none;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: white;
+            height: 100%;
+        }
+        .medico-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 15px;
+        }
+        .specialty-badge {
+            background-color: #fff3cd;
+            color: #856404;
+            font-size: 0.8rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-dark navbar-public">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/login">
+                <i class="fas fa-microscope me-2 text-warning"></i>LabSys Público
+            </a>
+            <a href="/login" class="btn btn-outline-light btn-sm rounded-pill px-4">
+                <i class="fas fa-user-lock me-1"></i> Área Personal
+            </a>
+        </div>
+    </nav>
+
+    <header class="search-section text-center">
+        <div class="container">
+            <h1 class="fw-bold mb-3">Directorio Médico</h1>
+            <p class="lead opacity-75 mb-4">Encuentra a los especialistas autorizados de nuestra red</p>
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="input-group input-group-lg shadow-sm">
+                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Buscar por nombre o especialidad...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mb-5">
+        <div class="row g-4" id="medicosContainer">
+            <div class="col-md-4 medico-item">
+                <div class="card medico-card p-4 text-center">
+                    <div class="avatar-circle"><i class="fas fa-user-md"></i></div>
+                    <h5 class="fw-bold mb-1">Dr. Alejandro Martínez</h5>
+                    <div class="mb-3"><span class="specialty-badge">Cardiología</span></div>
+                    <p class="text-muted small mb-3"><i class="fas fa-hospital-user me-1"></i> Consultorio 402 - Torre Médica</p>
+                    <hr>
+                    <div class="d-flex justify-content-around text-primary">
+                        <span title="Atención Lunes a Viernes"><i class="far fa-calendar-check me-1"></i> Lun-Vie</span>
+                        <span title="Acepta Seguros"><i class="fas fa-check-circle me-1"></i> Aseguradoras</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 medico-item">
+                <div class="card medico-card p-4 text-center">
+                    <div class="avatar-circle"><i class="fas fa-user-md"></i></div>
+                    <h5 class="fw-bold mb-1">Dra. Elena Vargas</h5>
+                    <div class="mb-3"><span class="specialty-badge">Endocrinología</span></div>
+                    <p class="text-muted small mb-3"><i class="fas fa-hospital-user me-1"></i> Consultorio 105 - Planta Baja</p>
+                    <hr>
+                    <div class="d-flex justify-content-around text-primary">
+                        <span title="Atención Sábados"><i class="far fa-calendar-check me-1"></i> Sábados</span>
+                        <span title="Efectivo/Tarjeta"><i class="fas fa-credit-card me-1"></i> Pagos</span>
+                    </div>
+                </div>
+            </div>
+            </div>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-auto">
+        <div class="container text-center">
+            <p class="small mb-0 opacity-50">&copy; 2026 LabSys - Sistema de Gestión de Laboratorio Clínico</p>
+        </div>
+    </footer>
+
+    <script>
+        // Lógica de búsqueda simple en tiempo real
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            let filter = this.value.toUpperCase();
+            let items = document.querySelectorAll('.medico-item');
+            
+            items.forEach(item => {
+                let text = item.innerText.toUpperCase();
+                item.style.display = text.includes(filter) ? "" : "none";
+            });
+        });
+    </script>
+</body>
+</html>

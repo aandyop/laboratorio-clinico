@@ -3,91 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Órdenes - Laboratorio</title>
-    <link rel="stylesheet" href="/stylesheets/style.css">
+    <title>Gestión de Órdenes - LabSys</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .container { width: 90%; margin: auto; padding: 20px; }
-        .grid-ordenes { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 20px; 
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .order-card { 
+            border: none; border-radius: 15px; 
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            background: white; border-left: 5px solid #dee2e6;
         }
-        .card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
-        .badge { padding: 5px 10px; border-radius: 4px; font-size: 0.8em; }
-        .pendiente { background: #ffeeba; color: #856404; }
-        .completada { background: #d4edda; color: #155724; }
+        .order-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .card-Pendiente { border-left-color: #ffc107; }
+        .card-En-Proceso { border-left-color: #0dcaf0; }
+        .card-Completada { border-left-color: #198754; }
+        .form-section { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .sticky-custom { position: sticky; top: 20px; }
     </style>
 </head>
 <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-microscope me-2 text-warning"></i>LabSys</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home me-1"></i> Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/pacientes">Pacientes</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/ordenes">Órdenes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/examenes">Exámenes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/facturas">Facturación</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Configuración</a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><a class="dropdown-item" href="/inventario"><i class="fas fa-boxes me-2"></i>Inventario</a></li>
+                            <li><a class="dropdown-item" href="/medicos"><i class="fas fa-user-md me-2"></i>Médicos</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/valores"><i class="fas fa-cog me-2"></i>Valores Ref.</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="text-light me-3 small" id="user-display"></span>
+                    <button onclick="logout()" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                        <i class="fas fa-power-off"></i> Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
-        <h1>Gestión de Órdenes Médicas</h1>
-        
-        <section class="card">
-            <h3>Nueva Orden</h3>
-            <form id="formOrden">
-                <div class="form-group">
-                    <label>ID Paciente:</label>
-                    <input type="number" id="paciente_id" required min="1">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="form-section sticky-custom">
+                    <h4 class="fw-bold mb-4 text-primary"><i class="fas fa-file-medical me-2"></i>Nueva Orden</h4>
+                    <form id="formOrden">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Seleccionar Paciente</label>
+                            <select id="paciente_id" class="form-select bg-light" required>
+                                <option value="">Cargando pacientes...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Médico Solicitante</label>
+                            <select id="medico_id" class="form-select bg-light" required>
+                                <option value="">Cargando médicos...</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold mb-2 d-block">Exámenes Requeridos</label>
+                            <div id="lista-examenes" class="p-3 border rounded bg-light" style="max-height: 200px; overflow-y: auto;">
+                                <p class="text-muted small mb-0">Cargando catálogo...</p>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                            <i class="fas fa-plus-circle me-2"></i>Generar Orden Médica
+                        </button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>ID Médico:</label>
-                    <input type="number" id="medico_id" required min="1">
-                </div>
-                <div class="form-group">
-                    <p>Seleccione Exámenes:</p>
-                    <label><input type="checkbox" name="examenes" value="1"> Hematología Completa</label><br>
-                    <label><input type="checkbox" name="examenes" value="2"> Glicemia</label>
-                </div>
-                <button type="submit">Generar Orden</button>
-            </form>
-        </section>
+            </div>
 
-        <hr>
-
-        <div class="grid-ordenes">
-            <% ordenes.forEach(orden => { %>
-                <div class="card">
-                    <h4>Orden #<%= orden.id %></h4>
-                    <p><strong>Paciente:</strong> <%= orden.paciente %></p>
-                    <p><strong>Médico:</strong> <%= orden.medico %></p>
-                    <p><strong>Fecha:</strong> <%= new Date(orden.fecha_orden).toLocaleDateString() %></p>
-                    <span class="badge <%= orden.estado.toLowerCase().replace(' ', '-') %>">
-                        <%= orden.estado %>
-                    </span>
-                    <br><br>
-                    <a href="/ordenes/<%= orden.id %>/resultados" class="btn">Ver/Cargar Resultados</a>
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0 text-dark">Órdenes Recientes</h4>
                 </div>
-            <% }) %>
+                <div class="row g-3" id="contenedor-ordenes"></div>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const token = localStorage.getItem('token');
+        const rol = localStorage.getItem('rol');
+
+        if (!token) window.location.href = '/login';
+        document.getElementById('user-display').innerHTML = `<i class="fas fa-user-shield me-1"></i> ${rol || 'Usuario'}`;
+
+        const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+        async function cargarDatosIniciales() {
+            try {
+                const [resP, resM, resE] = await Promise.all([
+                    fetch('/api/pacientes', { headers }),
+                    fetch('/api/medicos', { headers }),
+                    fetch('/api/examenes', { headers })
+                ]);
+
+                const pacientes = await resP.json();
+                const medicos = await resM.json();
+                const examenes = await resE.json();
+
+                const selectPac = document.getElementById('paciente_id');
+                selectPac.innerHTML = '<option value="">Seleccione un paciente</option>';
+                pacientes.forEach(p => selectPac.innerHTML += `<option value="${p.id}">${p.nombre}</option>`);
+
+                const selectMed = document.getElementById('medico_id');
+                selectMed.innerHTML = '<option value="">Seleccione un médico</option>';
+                medicos.forEach(m => selectMed.innerHTML += `<option value="${m.id}">${m.nombre}</option>`);
+
+                const divEx = document.getElementById('lista-examenes');
+                divEx.innerHTML = '';
+                examenes.forEach(e => {
+                    divEx.innerHTML += `
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="examenes" value="${e.id}" id="ex_${e.id}">
+                            <label class="form-check-label small" for="ex_${e.id}">${e.tipo_examen}</label>
+                        </div>`;
+                });
+                cargarOrdenes();
+            } catch (err) { console.error("Error:", err); }
+        }
+
+        async function cargarOrdenes() {
+            try {
+                const response = await fetch('/api/ordenes', { headers });
+                const ordenes = await response.json();
+                const contenedor = document.getElementById('contenedor-ordenes');
+                contenedor.innerHTML = ordenes.length ? '' : '<p class="text-muted">No hay órdenes.</p>';
+
+                ordenes.forEach(o => {
+                    const estadoClase = o.estado.replace(/\s+/g, '-');
+                    contenedor.innerHTML += `
+                        <div class="col-12">
+                            <div class="card order-card card-${estadoClase} p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">${o.paciente_nombre}</h6>
+                                        <p class="small text-muted mb-0">Dr. ${o.medico_nombre}</p>
+                                    </div>
+                                    <span class="badge ${getBadgeColor(o.estado)}">${o.estado}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        function getBadgeColor(e) {
+            return e === 'Pendiente' ? 'bg-warning text-dark' : e === 'En Proceso' ? 'bg-info' : 'bg-success';
+        }
+
         document.getElementById('formOrden').addEventListener('submit', async (e) => {
             e.preventDefault();
             const examenes = Array.from(document.querySelectorAll('input[name="examenes"]:checked')).map(cb => cb.value);
-            
             const data = {
                 paciente_id: document.getElementById('paciente_id').value,
                 medico_id: document.getElementById('medico_id').value,
                 examenes_ids: examenes
             };
 
-            const response = await fetch('/ordenes/crear', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(data)
-            });
-
-            if(response.ok) {
-                alert("Orden creada con éxito");
-                location.reload();
-            } else {
-                alert("Error al crear la orden");
-            }
+            const res = await fetch('/api/ordenes', { method: 'POST', headers, body: JSON.stringify(data) });
+            if(res.ok) location.reload();
+            else alert("Error al crear la orden");
         });
+
+        function logout() { localStorage.clear(); window.location.href = '/login'; }
+        cargarDatosIniciales();
     </script>
 </body>
 </html>

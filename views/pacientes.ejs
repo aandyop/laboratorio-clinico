@@ -2,150 +2,238 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pacientes - Laboratorio</title>
-    <link rel="stylesheet" href="/stylesheets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pacientes - LabSys</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .table-container { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .btn-action { border-radius: 8px; transition: all 0.2s; }
+        .btn-action:hover { transform: scale(1.05); }
+    </style>
 </head>
 <body>
-    <nav>
-        <a href="/pacientes"><strong>Pacientes</strong></a> | 
-        <a href="/examenes">Exámenes</a> |
-        <a href="/facturas">Facturación</a> |
-        <a href="/medicos">Médicos</a> |
-        <a href="/inventario">Inventario</a> |
-        <a href="/valores">Valores Ref.</a>
-        <button onclick="logout()" style="float: right; background: #ff4d4d; color: white; border: none; padding: 5px 10px; cursor: pointer;">Cerrar Sesión</button>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-microscope me-2 text-warning"></i>LabSys</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home me-1"></i> Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/pacientes">Pacientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ordenes">Órdenes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/examenes">Exámenes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/facturas">Facturación</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Configuración</a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><a class="dropdown-item" href="/inventario"><i class="fas fa-boxes me-2"></i>Inventario</a></li>
+                            <li><a class="dropdown-item" href="/medicos"><i class="fas fa-user-md me-2"></i>Médicos</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/valores"><i class="fas fa-cog me-2"></i>Valores Ref.</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="text-light me-3 small" id="user-display"><i class="far fa-user-circle me-1"></i> Usuario</span>
+                    <button onclick="logout()" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                        <i class="fas fa-power-off"></i> Salir
+                    </button>
+                </div>
+            </div>
+        </div>
     </nav>
 
-    <h1>Gestión de Pacientes</h1>
-    
-    <section>
-        <form id="paciente-form">
-            <input type="text" id="nombre" placeholder="Nombre completo" required>
-            <input type="text" id="cedula" placeholder="Cédula" required>
-            <input type="text" id="telefono" placeholder="Teléfono" required>
-            <select id="medico_id">
-                <option value="">-- Seleccione Médico (Opcional) --</option>
-            </select>
-            <button type="submit">Guardar Paciente</button>
-        </form>
-    </section>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-0"><i class="fas fa-users-cog me-2 text-primary"></i>Gestión de Pacientes</h2>
+                <p class="text-muted small">Registro y administración de la base de datos de pacientes</p>
+            </div>
+            <button class="btn btn-primary btn-action shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#modalPaciente">
+                <i class="fas fa-user-plus me-2"></i>Nuevo Paciente
+            </button>
+        </div>
 
-    <hr>
+        <div class="table-container shadow-sm border-0">
+            <div class="table-responsive">
+                <table id="pacientes-table" class="table table-hover align-middle">
+                    <thead class="table-light text-uppercase small fw-bold">
+                        <tr>
+                            <th>Nombre Completo</th>
+                            <th>Cédula</th>
+                            <th>Teléfono</th>
+                            <th>Médico Tratante</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-    <table id="pacientes-table" border="1">
-        <thead>
-            <tr>
-                <th>Nombre</th><th>Cédula</th><th>Teléfono</th><th>Médico</th><th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <div class="modal fade" id="modalPaciente" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-id-card me-2"></i>Registrar Paciente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="paciente-form">
+                    <div class="modal-body p-4 text-start">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Nombre Completo</label>
+                            <input type="text" id="nombre" class="form-control bg-light" required>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Cédula</label>
+                                <input type="text" id="cedula" class="form-control bg-light" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Teléfono</label>
+                                <input type="text" id="telefono" class="form-control bg-light" required>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small text-primary">Asignar Médico Tratante</label>
+                            <select id="medico_id" class="form-select border-primary bg-light">
+                                <option value="">-- Sin asignar médico --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">Guardar Registro</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const token = localStorage.getItem('token');
         const rol = localStorage.getItem('rol');
 
-        if (!token) {
-            window.location.href = '/login';
-        }
+        if (!token) window.location.href = '/login';
+        
+        document.getElementById('user-display').innerHTML = `<i class="fas fa-user-shield me-1"></i> ${rol || 'Usuario'}`;
 
         function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('rol');
+            localStorage.clear();
             window.location.href = '/login';
         }
 
         async function cargarMedicos() {
             try {
-                const response = await fetch('/api/medicos', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const medicos = await response.json();
-                const select = document.getElementById('medico_id');
+                const res = await fetch('/api/medicos', { headers: { 'Authorization': `Bearer ${token}` } });
+                const medicos = await res.json();
+                
+                // Verificación de seguridad
+                if (!Array.isArray(medicos)) return console.error("Medicos no es un array:", medicos);
 
+                const select = document.getElementById('medico_id');
                 medicos.forEach(m => {
-                    const option = document.createElement('option');
-                    option.value = m.id;
-                    option.textContent = m.nombre;
-                    select.appendChild(option);
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.textContent = m.nombre;
+                    select.appendChild(opt);
                 });
-            } catch (error) {
-                console.error("Error al cargar médicos para el formulario:", error);
-            }
+            } catch (err) { console.error("Error cargando médicos:", err); }
         }
 
         async function cargarPacientes() {
             try {
-                const response = await fetch('/api/pacientes', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                const res = await fetch('/api/pacientes', {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (response.ok) {
-                    const pacientes = await response.json();
-                    const tbody = document.querySelector('#pacientes-table tbody');
-                    tbody.innerHTML = '';
+                // Si el servidor da error (500), res.json() devolverá un error, no un array
+                const data = await res.json();
 
-                    pacientes.forEach(p => {
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${p.nombre}</td>
-                                <td>${p.cedula}</td>
-                                <td>${p.telefono}</td>
-                                <td>${p.medico_nombre || 'N/A'}</td>
-                                <td>
-                                    ${rol === 'ADMIN' ? `<button onclick="eliminarPaciente(${p.id})">Eliminar</button>` : 'Sin permisos'}
-                                </td>
-                            </tr>
-                        `;
-                    });
+                if (!res.ok || !Array.isArray(data)) {
+                    console.error("Error del servidor o formato incorrecto:", data);
+                    return;
                 }
-            } catch (error) {
-                console.error("Error de conexión:", error);
+
+                const tbody = document.querySelector('#pacientes-table tbody');
+                tbody.innerHTML = '';
+
+                data.forEach(p => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><div class="fw-bold text-dark">${p.nombre}</div></td>
+                            <td><span class="badge bg-light text-dark border">${p.cedula}</span></td>
+                            <td>${p.telefono}</td>
+                            <td><i class="fas fa-user-md me-1 text-primary"></i> ${p.medico_nombre || '<span class="text-muted italic small">No asignado</span>'}</td>
+                            <td class="text-end">
+                                ${rol === 'ADMIN' ? 
+                                    `<button onclick="eliminarPaciente(${p.id})" class="btn btn-outline-danger btn-sm border-0">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>` : 
+                                    `<span class="badge bg-light text-muted fw-normal"><i class="fas fa-lock me-1"></i>Lectura</span>`}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) { 
+                console.error("Error crítico cargando pacientes:", err); 
             }
         }
 
-        cargarMedicos();
-        cargarPacientes();
-
         document.getElementById('paciente-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const medicoVal = document.getElementById('medico_id').value;
             const datos = {
                 nombre: document.getElementById('nombre').value,
                 cedula: document.getElementById('cedula').value,
                 telefono: document.getElementById('telefono').value,
-                medico_id: document.getElementById('medico_id').value || null
+                // Enviamos null si el valor está vacío para que el backend lo entienda
+                medico_id: medicoVal === "" ? null : medicoVal 
             };
 
-            const response = await fetch('/api/pacientes', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(datos)
-            });
+            try {
+                const response = await fetch('/api/pacientes', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(datos)
+                });
 
-            if (response.ok) {
-                alert("Paciente guardado");
-                location.reload();
-            } else {
-                const err = await response.json();
-                alert("Error: " + err.error);
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    const err = await response.json();
+                    alert("Error al guardar: " + (err.sqlMessage || err.error || "Error desconocido"));
+                }
+            } catch (error) {
+                alert("Error de conexión con el servidor");
             }
         });
 
         async function eliminarPaciente(id) {
-            if(!confirm("¿Seguro que deseas eliminar este paciente?")) return;
+            if(!confirm("¿Está seguro? Esta acción borrará también los exámenes y facturas de este paciente.")) return;
             const response = await fetch(`/api/pacientes/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if(response.ok) location.reload();
         }
+
+        // Ejecución inicial
+        cargarMedicos();
+        cargarPacientes();
     </script>
 </body>
 </html>
