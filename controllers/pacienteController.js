@@ -1,6 +1,42 @@
 const Paciente = require('../models/Paciente');
 
 class PacienteController {
+    /**
+     * NUEVO: Verifica si un paciente tiene acceso a una orden específica.
+     * Esta es la función que faltaba y causaba el error al iniciar el servidor.
+     */
+    static async verificarResultado(req, res) {
+        try {
+            const { cedula, ordenId } = req.body;
+
+            // Validación básica de entrada
+            if (!cedula || !ordenId) {
+                return res.status(400).json({ error: "Cédula y Número de Orden son requeridos." });
+            }
+
+            // Llamamos al modelo para validar la existencia de la orden para ese paciente
+            // Nota: Asegúrate de tener este método en tu modelo Paciente o adáptalo a tu DB
+            const ordenValida = await Paciente.validarOrden(cedula, ordenId);
+
+            if (!ordenValida) {
+                return res.status(404).json({ 
+                    error: "No se encontró la orden o los datos no coinciden. Verifique su comprobante." 
+                });
+            }
+
+            // Si es válido, devolvemos el éxito para que el frontend redirija o muestre los datos
+            res.json({ 
+                mensaje: "Acceso autorizado", 
+                ordenId: ordenId,
+                paciente: ordenValida.nombre_paciente 
+            });
+
+        } catch (error) {
+            console.error("Error en verificarResultado:", error);
+            res.status(500).json({ error: "Error interno al verificar los datos." });
+        }
+    }
+
     static async listar(req, res) {
         try {
             const pacientes = await Paciente.obtenerTodos();
@@ -13,7 +49,7 @@ class PacienteController {
 
     static async guardar(req, res) {
         try {
-            const { nombre, cedula, telefono, medico_id } = req.body;
+            const { nombre, cedula, telefono } = req.body;
 
             if (!nombre || nombre.trim() === "") {
                 return res.status(400).json({ error: "El nombre del paciente es obligatorio." });
@@ -46,7 +82,7 @@ class PacienteController {
     static async editar(req, res) {
         try {
             const { id } = req.params;
-            const { nombre, cedula, telefono, medico_id } = req.body;
+            const { nombre, cedula } = req.body;
 
             if (!nombre || !cedula) {
                 return res.status(400).json({ error: "No puede dejar el nombre o la cédula vacíos." });

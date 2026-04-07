@@ -37,7 +37,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ==========================================
 // RUTAS DE VISTAS (FRONTEND - RENDERIZADO)
 // ==========================================
-// Nota: Estas rutas sirven el HTML. La seguridad se maneja en el cliente (localStorage)
 app.get('/login', (req, res) => res.render('login'));
 app.get('/', (req, res) => res.render('index', { title: 'Panel de Control - Laboratorio' }));
 app.get('/medicos', (req, res) => res.render('medicos'));
@@ -48,49 +47,49 @@ app.get('/inventario', (req, res) => res.render('inventario'));
 app.get('/facturas', (req, res) => res.render('facturas'));
 app.get('/ordenes', (req, res) => res.render('ordenes'));
 
-// Rutas públicas
+// Rutas públicas de vistas
 app.get('/consultar-resultados', (req, res) => res.render('consulta_paciente', { title: "Consultar Resultados" }));
 app.get('/medicos/directorio', (req, res) => res.render('directorio_publico', { title: "Nuestros Especialistas" }));
+app.get('/mis-resultados/:id', (req, res) => {
+    res.render('ver_resultados_publico', { title: "Mis Resultados", ordenId: req.params.id });
+});
 
 // ==========================================
 // RUTAS DE LA API (BACKEND - DATOS)
 // ==========================================
 
-// 1. Públicas
+// 1. Rutas con manejo mixto o públicas 
+// IMPORTANTE: Aquí manejamos la seguridad DENTRO de cada router
 app.use('/api/auth', authRouter);
+app.use('/api/medicos', medicosRouter); 
+app.use('/api/pacientes', pacientesRouter); 
+app.use('/api/resultados', resultadosRouter); 
+app.use('/api/reportes', reportesRoutes); // <--- CORREGIDO: Quitamos autenticarToken de aquí
 
-// 2. Protegidas con Token
-app.use('/api/dashboard', autenticarToken, dashboardRouter); // IMPORTANTE: Para el fetch de index.ejs
-app.use('/api/pacientes', autenticarToken, pacientesRouter);
+// 2. Rutas 100% Protegidas con Token (Solo personal autorizado)
+app.use('/api/dashboard', autenticarToken, dashboardRouter);
 app.use('/api/examenes', autenticarToken, examenesRouter);
-app.use('/api/medicos', autenticarToken, medicosRouter);
 app.use('/api/inventario', autenticarToken, inventarioRouter);
 app.use('/api/facturas', autenticarToken, facturaRoutes);
 app.use('/api/valores-referencia', autenticarToken, valoresRouter);
 app.use('/api/ordenes', autenticarToken, ordenesRouter); 
-app.use('/api/resultados', autenticarToken, resultadosRouter);
-app.use('/api/reportes', autenticarToken, reportesRoutes);
 app.use('/api/users', autenticarToken, usersRouter);
 
 // ==========================================
 // MANEJO DE ERRORES
 // ==========================================
 
-// Capturar 404
 app.use((req, res, next) => {
     next(createError(404));
 });
 
-// Error handler
 app.use((err, req, res, next) => {
-    // Configurar mensajes de error
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
     
     const status = err.status || 500;
     res.status(status);
     
-    // Si la petición falla en la API, responder JSON (Evita que el fetch se rompa)
     if (req.originalUrl.startsWith('/api/')) {
         return res.json({ 
             error: err.message,

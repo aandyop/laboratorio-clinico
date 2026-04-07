@@ -7,6 +7,29 @@ class Paciente {
         this.telefono = telefono;
     }
 
+    /**
+     * NUEVO: Valida si una orden pertenece a un paciente específico.
+     * Cruza la tabla de pacientes con la de órdenes por ID y Cédula.
+     */
+    static async validarOrden(cedula, ordenId) {
+        try {
+            const query = `
+                SELECT p.nombre, o.id AS orden_id 
+                FROM pacientes p
+                JOIN ordenes o ON p.id = o.paciente_id
+                WHERE p.cedula = ? AND o.id = ?
+                LIMIT 1
+            `;
+            const [rows] = await db.execute(query, [cedula, ordenId]);
+            
+            // Retorna el primer resultado si existe, o null si no hay coincidencia
+            return rows.length > 0 ? rows[0] : null;
+        } catch (error) {
+            console.error("Error en Paciente.validarOrden:", error);
+            throw error;
+        }
+    }
+
     static async obtenerTodos() {
         const query = `
             SELECT p.*, m.nombre AS medico_nombre 
@@ -28,7 +51,6 @@ class Paciente {
     }
     
     static async actualizar(id, datos) {
-        // CORRECCIÓN: Agregado medico_id para que se pueda editar el médico del paciente
         const { nombre, cedula, telefono, medico_id } = datos;
         const [result] = await db.execute(
             'UPDATE pacientes SET nombre = ?, cedula = ?, telefono = ?, medico_id = ? WHERE id = ?',

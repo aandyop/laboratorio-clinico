@@ -112,12 +112,12 @@
                 const [resP, resM, resE] = await Promise.all([
                     fetch('/api/pacientes', { headers }),
                     fetch('/api/medicos', { headers }),
-                    fetch('/api/examenes', { headers })
+                    fetch('/api/examenes/unicos', { headers }) 
                 ]);
 
                 const pacientes = await resP.json();
                 const medicos = await resM.json();
-                const examenes = await resE.json();
+                const examenesTipos = await resE.json();
 
                 const selectPac = document.getElementById('paciente_id');
                 selectPac.innerHTML = '<option value="">Seleccione un paciente</option>';
@@ -129,15 +129,17 @@
 
                 const divEx = document.getElementById('lista-examenes');
                 divEx.innerHTML = '';
-                examenes.forEach(e => {
+                
+                examenesTipos.forEach((e, index) => {
                     divEx.innerHTML += `
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="examenes" value="${e.id}" id="ex_${e.id}">
-                            <label class="form-check-label small" for="ex_${e.id}">${e.tipo_examen}</label>
+                            <input class="form-check-input" type="checkbox" name="examenes" value="${e.tipo_examen}" id="ex_${index}">
+                            <label class="form-check-label small" for="ex_${index}">${e.tipo_examen}</label>
                         </div>`;
                 });
+                
                 cargarOrdenes();
-            } catch (err) { console.error("Error:", err); }
+            } catch (err) { console.error("Error al cargar datos iniciales:", err); }
         }
 
         async function cargarOrdenes() {
@@ -145,42 +147,104 @@
                 const response = await fetch('/api/ordenes', { headers });
                 const ordenes = await response.json();
                 const contenedor = document.getElementById('contenedor-ordenes');
-                contenedor.innerHTML = ordenes.length ? '' : '<p class="text-muted">No hay órdenes.</p>';
+                contenedor.innerHTML = ordenes.length ? '' : '<p class="text-muted">No hay órdenes recientes.</p>';
 
                 ordenes.forEach(o => {
                     const estadoClase = o.estado.replace(/\s+/g, '-');
+                    
+                    // Lógica para mostrar botón "Completar" solo si está Pendiente
+                    const botonAccion = o.estado === 'Pendiente' 
+                        ? `<button onclick="cambiarEstado(${o.id}, 'Completada')" class="btn btn-sm btn-success me-2">
+                                <i class="fas fa-check-circle me-1"></i> Completar
+                           </button>` 
+                        : '';
+
                     contenedor.innerHTML += `
                         <div class="col-12">
-                            <div class="card order-card card-${estadoClase} p-3">
+                            <div class="card order-card card-${estadoClase} p-3 mb-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="fw-bold mb-1">${o.paciente_nombre}</h6>
                                         <p class="small text-muted mb-0">Dr. ${o.medico_nombre}</p>
+                                        <p class="x-small text-secondary mb-0" style="font-size: 0.75rem;">
+                                            Fecha: ${new Date(o.fecha).toLocaleDateString()}
+                                        </p>
                                     </div>
-                                    <span class="badge ${getBadgeColor(o.estado)}">${o.estado}</span>
+                                    <div class="text-end">
+                                        <span class="badge ${getBadgeColor(o.estado)} mb-2 d-block">${o.estado}</span>
+                                        <div class="btn-group">
+                                            ${botonAccion}
+                                            <a href="/api/reportes/pdf/${o.id}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                <i class="fas fa-file-pdf"></i> PDF
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>`;
                 });
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Error al cargar órdenes:", err); }
+        }
+
+        // FUNCIÓN NUEVA: Cambiar estado en la DB
+        async function cambiarEstado(id, nuevoEstado) {
+            if (!confirm(`¿Estás seguro de marcar la orden #${id} como ${nuevoEstado}?`)) return;
+
+            try {
+                const res = await fetch(`/api/ordenes/${id}/estado`, {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+
+                if (res.ok) {
+                    alert("Estado actualizado correctamente");
+                    cargarOrdenes(); // Recargamos la lista sin refrescar toda la página
+                } else {
+                    alert("Error al actualizar el estado");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
         }
 
         function getBadgeColor(e) {
-            return e === 'Pendiente' ? 'bg-warning text-dark' : e === 'En Proceso' ? 'bg-info' : 'bg-success';
+            if (e === 'Pendiente') return 'bg-warning text-dark';
+            if (e === 'En Proceso') return 'bg-info text-dark';
+            return 'bg-success';
         }
 
         document.getElementById('formOrden').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const examenes = Array.from(document.querySelectorAll('input[name="examenes"]:checked')).map(cb => cb.value);
+            const examenesSeleccionados = Array.from(document.querySelectorAll('input[name="examenes"]:checked')).map(cb => cb.value);
+            
+            if (examenesSeleccionados.length === 0) {
+                alert("Por favor selecciona al menos un examen.");
+                return;
+            }
+
             const data = {
                 paciente_id: document.getElementById('paciente_id').value,
                 medico_id: document.getElementById('medico_id').value,
-                examenes_ids: examenes
+                examenes_nombres: examenesSeleccionados
             };
 
-            const res = await fetch('/api/ordenes', { method: 'POST', headers, body: JSON.stringify(data) });
-            if(res.ok) location.reload();
-            else alert("Error al crear la orden");
+            try {
+                const res = await fetch('/api/ordenes', { 
+                    method: 'POST', 
+                    headers, 
+                    body: JSON.stringify(data) 
+                });
+                
+                if(res.ok) {
+                    alert("Orden creada exitosamente");
+                    location.reload();
+                } else {
+                    alert("Error al crear la orden");
+                }
+            } catch (error) {
+                console.error("Error en el envío:", error);
+            }
         });
 
         function logout() { localStorage.clear(); window.location.href = '/login'; }

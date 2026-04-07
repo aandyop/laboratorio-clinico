@@ -1,6 +1,32 @@
 const Medico = require('../models/Medico');
 
 class MedicoController {
+    /**
+     * NUEVO: Listado para el Directorio Público (Sin token)
+     * Devuelve solo la información necesaria para el visitante.
+     */
+    static async listarPublico(req, res) {
+        try {
+            const medicos = await Medico.obtenerTodos();
+            
+            // Mapeamos los datos para enviar solo lo que el público debe ver
+            const directorio = medicos.map(m => ({
+                nombre: m.nombre,
+                especialidad: m.especialidad,
+                licencia: m.codigo_colegiado, // Usamos codigo_colegiado como licencia
+                telefono: m.telefono || "Consultar en clínica"
+            }));
+
+            res.json(directorio);
+        } catch (error) {
+            console.error("Error en MedicoController.listarPublico:", error);
+            res.status(500).json({ error: "Error al obtener el directorio médico." });
+        }
+    }
+
+    /**
+     * Listado para el Área Privada (Requiere token)
+     */
     static async listar(req, res) {
         try {
             const medicos = await Medico.obtenerTodos();
@@ -11,6 +37,9 @@ class MedicoController {
         }
     }
 
+    /**
+     * Guardar nuevo médico (Solo ADMIN)
+     */
     static async guardar(req, res) {
         try {
             const { nombre, especialidad, codigo_colegiado } = req.body;
@@ -36,6 +65,9 @@ class MedicoController {
         }
     }
 
+    /**
+     * Borrar médico (Solo ADMIN)
+     */
     static async borrar(req, res) {
         try {
             const { id } = req.params;
@@ -50,6 +82,7 @@ class MedicoController {
         } catch (error) {
             console.error("Error al borrar médico:", error);
             
+            // Error de clave foránea (si el médico ya tiene pacientes asignados)
             if (error.code === 'ER_ROW_IS_REFERENCED_2') {
                 return res.status(400).json({ error: "No se puede eliminar: este médico tiene pacientes asociados." });
             }

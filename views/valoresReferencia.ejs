@@ -137,31 +137,31 @@
             window.location.href = '/login';
         }
 
-        // Función nueva para cargar los exámenes en el select
-        // Localiza esta función dentro de tu bloque <script> y reemplázala:
+        // FUNCIÓN CORREGIDA PARA EVITAR REPETIDOS
         async function cargarExamenes() {
             try {
-                const response = await fetch('/api/examenes', {
+                // CAMBIO: Apuntamos a la ruta de tipos únicos que creamos en el controlador
+                const response = await fetch('/api/examenes/unicos', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
                 if (!response.ok) throw new Error("Fallo al conectar con la API de exámenes");
                 
-                const examenes = await response.json();
+                const tiposExamen = await response.json();
                 const select = document.getElementById('examen_id');
                 
-                // Limpiamos el select excepto la primera opción
+                // Limpiamos el select
                 select.innerHTML = '<option value="">Seleccione un examen...</option>';
                 
-                examenes.forEach(e => {
+                tiposExamen.forEach(e => {
                     const option = document.createElement('option');
-                    option.value = e.id;
-                    // CAMBIO CLAVE: e.tipo_examen en lugar de e.nombre
-                    option.textContent = e.tipo_examen || e.nombre || "Examen sin nombre";
+                    // Usamos el nombre como valor ya que es un catálogo de referencias por nombre
+                    option.value = e.tipo_examen; 
+                    option.textContent = e.tipo_examen;
                     select.appendChild(option);
                 });
                 
-                console.log("Exámenes cargados con éxito");
+                console.log("Catálogo de exámenes cargado sin duplicados");
             } catch (err) { 
                 console.error("Error al cargar exámenes en el select:", err);
             }
@@ -174,9 +174,7 @@
                 });
                 const valores = await response.json();
                 
-                // Si la respuesta no es un array, forzamos uno vacío para evitar error .forEach
                 const listaValores = Array.isArray(valores) ? valores : [];
-                
                 const tbody = document.querySelector('#valores-table tbody');
                 document.getElementById('count-referencias').innerText = `${listaValores.length} Registros`;
                 tbody.innerHTML = '';
@@ -214,7 +212,8 @@
             }
 
             const datos = {
-                examen_id: document.getElementById('examen_id').value,
+                // Ahora enviamos el nombre del examen seleccionado
+                nombre_examen: document.getElementById('examen_id').value,
                 minimo: vMin,
                 maximo: vMax,
                 unidad: document.getElementById('unidad').value

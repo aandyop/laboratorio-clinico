@@ -114,7 +114,6 @@
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Buscando...';
                 errorDiv.classList.add('d-none');
 
-                // Endpoint público que valida orden + cédula
                 const response = await fetch('/api/pacientes/verificar-resultado', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -124,13 +123,19 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Si los datos coinciden, redirigimos directamente a la descarga del PDF
-                    window.location.href = `/reportes/descargar/${ordenId}?token_publico=${data.tempToken}`;
+                    /**
+                     * CORRECCIÓN DE RUTA Y TOKEN:
+                     * 1. Agregamos el prefijo /api/ para evitar el 404.
+                     * 2. Usamos un fallback por si 'tempToken' no viene en la respuesta.
+                     */
+                    const token = data.token || data.tempToken || 'public_access';
+                    window.location.href = `/api/reportes/descargar/${ordenId}?token_publico=${token}`;
                 } else {
                     errorDiv.innerText = data.error || "No se encontró la orden o los datos no coinciden.";
                     errorDiv.classList.remove('d-none');
                 }
             } catch (error) {
+                console.error("Error en el fetch:", error);
                 errorDiv.innerText = "Error de conexión con el laboratorio.";
                 errorDiv.classList.remove('d-none');
             } finally {
